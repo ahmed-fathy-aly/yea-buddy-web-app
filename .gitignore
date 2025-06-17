@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Build artifacts
+dist/      # For Vite build output
+build/     # For Create React App build output (if you switch to CRA later)
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE-specific files
+.idea/             # JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.vscode/           # VS Code settings (optional, if user-specific)
+*.iml
+.project
+.classpath
+.settings/
+
+# OS-specific files
+.DS_Store          # macOS
+Thumbs.db          # Windows
+
+# Testing
+/coverage
+
+# Storybook (if used)
+.storybook-out/
+
+# Vercel (if deployed there)
+.vercel/
