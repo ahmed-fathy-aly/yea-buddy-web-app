@@ -15,10 +15,16 @@ const App = () => {
   // Ref for the save debounce timer
   const saveTimerRef = useRef(null);
 
-  // Timer states
+  // Rest Timer states
   const [timerActive, setTimerActive] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0); // in seconds
-  const timerIntervalRef = useRef(null); // Ref to hold the interval ID
+  const restTimerIntervalRef = useRef(null); // Ref to hold the rest timer interval ID
+
+  // Gym Workout Timer states (NEW)
+  const [gymTimerActive, setGymTimerActive] = useState(false);
+  const [gymStartTime, setGymStartTime] = useState(null); // Timestamp when gym workout started
+  const [gymElapsedTime, setGymElapsedTime] = useState(0); // Total elapsed time in seconds
+  const gymTimerIntervalRef = useRef(null); // Ref to hold the gym timer interval ID
 
   // Exercise Tips Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,9 +34,10 @@ const App = () => {
   const [tipsAdditionalInput, setTipsAdditionalInput] = useState(''); // Input for exercise tips prompt within modal
   const [currentTipsExerciseId, setCurrentTipsExerciseId] = useState(null); // Stores ID of exercise currently being tipped
 
-  // Constants for timer
-  const TOTAL_TIMER_DURATION = 2 * 60; // 2 minutes in seconds
-  const LOCAL_STORAGE_TIMER_KEY = 'workoutTimerEndTime';
+  // Constants for timers
+  const TOTAL_REST_DURATION = 2 * 60; // 2 minutes in seconds
+  const LOCAL_STORAGE_REST_TIMER_KEY = 'workoutRestTimerEndTime';
+  const LOCAL_STORAGE_GYM_START_TIME_KEY = 'workoutGymStartTime'; // New key for gym timer
 
   // Base URL for your backend API
   const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
@@ -142,61 +149,67 @@ const App = () => {
     }, 500);
   };
 
-  // Timer logic
-  const startTimer = () => {
+  // Rest Timer logic
+  const startRestTimer = () => { // Renamed function
     if (Notification.permission === 'default') {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
           console.log('Notification permission granted.');
-          proceedWithTimerStart();
+          proceedWithRestTimerStart();
         } else {
           console.warn('Notification permission denied.');
           setMessage('Notification permission denied. Timer will still run, but you won\'t hear me!');
-          proceedWithTimerStart();
+          proceedWithRestTimerStart();
         }
       });
     } else if (Notification.permission === 'granted') {
-      proceedWithTimerStart();
+      proceedWithRestTimerStart();
     } else {
       setMessage('Notifications are blocked by your browser settings. Timer will still run, but you won\'t hear me!');
-      proceedWithTimerStart();
+      proceedWithRestTimerStart();
     }
   };
 
-  const proceedWithTimerStart = () => {
-    const endTime = Date.now() + TOTAL_TIMER_DURATION * 1000;
-    localStorage.setItem(LOCAL_STORAGE_TIMER_KEY, endTime);
+  const proceedWithRestTimerStart = () => { // Renamed function
+    const endTime = Date.now() + TOTAL_REST_DURATION * 1000;
+    localStorage.setItem(LOCAL_REST_TIMER_KEY, endTime);
     setTimerActive(true);
-    setMessage(`Rest timer SET! ${TOTAL_TIMER_DURATION / 60} minutes, AIN'T NOTHIN' BUT A PEANUT!`);
+    setMessage(`Rest timer SET! ${TOTAL_REST_DURATION / 60} minutes, AIN'T NOTHIN' BUT A PEANUT!`);
   };
 
-  const resetTimer = () => {
-    clearInterval(timerIntervalRef.current);
-    timerIntervalRef.current = null;
+  const resetRestTimer = () => { // Renamed function
+    clearInterval(restTimerIntervalRef.current);
+    restTimerIntervalRef.current = null;
     setTimerActive(false);
     setTimeRemaining(0);
-    localStorage.removeItem(LOCAL_STORAGE_TIMER_KEY);
-    setMessage('Timer RESET! Let\'s go!');
+    localStorage.removeItem(LOCAL_STORAGE_REST_TIMER_KEY);
+    setMessage('Rest Timer RESET! Let\'s go!');
   };
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const hours = Math.floor(minutes / 60);
+    const displayMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${displayMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${displayMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Effect to manage the timer countdown
+  // Effect to manage the rest timer countdown
   useEffect(() => {
     if (timerActive) {
-      timerIntervalRef.current = setInterval(() => {
-        const endTime = parseInt(localStorage.getItem(LOCAL_STORAGE_TIMER_KEY));
+      restTimerIntervalRef.current = setInterval(() => {
+        const endTime = parseInt(localStorage.getItem(LOCAL_REST_TIMER_KEY));
         const now = Date.now();
         const newTimeRemaining = Math.max(0, Math.floor((endTime - now) / 1000));
 
         setTimeRemaining(newTimeRemaining);
 
         if (newTimeRemaining === 0) {
-          resetTimer();
+          resetRestTimer();
           setMessage('IT\'S OVER! YEAH BUDDY! TIME TO WORK!');
           if (Notification.permission === 'granted') {
             new Notification('Workout Timer', {
@@ -209,31 +222,78 @@ const App = () => {
     }
 
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
+      if (restTimerIntervalRef.current) {
+        clearInterval(restTimerIntervalRef.current);
       }
     };
   }, [timerActive]);
 
-  // Effect to initialize timer state from localStorage on mount
+  // Effect to initialize rest timer state from localStorage on mount
   useEffect(() => {
-    const storedEndTime = localStorage.getItem(LOCAL_STORAGE_TIMER_KEY);
+    const storedEndTime = localStorage.getItem(LOCAL_STORAGE_REST_TIMER_KEY);
     if (storedEndTime) {
       const endTime = parseInt(storedEndTime);
       const now = Date.now();
-      // Corrected typo here: calculatedTimeTimeRemaining -> calculatedTimeRemaining
       const calculatedTimeRemaining = Math.max(0, Math.floor((endTime - now) / 1000));
 
       if (calculatedTimeRemaining > 0) {
-        setTimeRemaining(calculatedTimeRemaining); // Corrected variable name
+        setTimeRemaining(calculatedTimeRemaining);
         setTimerActive(true);
       } else {
-        resetTimer();
+        resetRestTimer();
       }
     } else {
-      setTimeRemaining(TOTAL_TIMER_DURATION);
+      setTimeRemaining(TOTAL_REST_DURATION);
     }
   }, []);
+
+  // Gym Workout Timer Logic (NEW)
+  const startGymWorkoutTimer = () => {
+    const startTime = Date.now();
+    localStorage.setItem(LOCAL_STORAGE_GYM_START_TIME_KEY, startTime);
+    setGymStartTime(startTime);
+    setGymTimerActive(true);
+    setMessage('WORKOUT STARTED! LIGHT WEIGHT! LET\'S GET THIS BREAD!');
+  };
+
+  const endGymWorkoutTimer = () => {
+    if (gymTimerIntervalRef.current) {
+      clearInterval(gymTimerIntervalRef.current);
+    }
+    setGymTimerActive(false);
+    localStorage.removeItem(LOCAL_STORAGE_GYM_START_TIME_KEY);
+    setMessage(`WORKOUT ENDED! Total time: ${formatTime(gymElapsedTime)}. YEAH BUDDY!`);
+  };
+
+  // Effect to manage the gym workout timer countdown
+  useEffect(() => {
+    if (gymTimerActive && gymStartTime !== null) {
+      gymTimerIntervalRef.current = setInterval(() => {
+        setGymElapsedTime(Math.floor((Date.now() - gymStartTime) / 1000));
+      }, 1000);
+    }
+
+    return () => {
+      if (gymTimerIntervalRef.current) {
+        clearInterval(gymTimerIntervalRef.current);
+      }
+    };
+  }, [gymTimerActive, gymStartTime]);
+
+  // Effect to initialize gym workout timer state from localStorage on mount
+  useEffect(() => {
+    const storedStartTime = localStorage.getItem(LOCAL_STORAGE_GYM_START_TIME_KEY);
+    if (storedStartTime) {
+      const startTime = parseInt(storedStartTime);
+      const now = Date.now();
+      const calculatedElapsedTime = Math.floor((now - startTime) / 1000);
+
+      setGymStartTime(startTime);
+      setGymElapsedTime(calculatedElapsedTime);
+      setGymTimerActive(true);
+    }
+  }, []);
+
 
   // Fetch today's workout when the component mounts
   useEffect(() => {
@@ -304,7 +364,7 @@ const App = () => {
   const { completedSets, totalSets, progressPercentage } = calculateWorkoutProgress();
 
   // Function to scroll to the first empty set
-  const scrollToFirstEmptySet = () => {
+  const scrollToFirstEmptySet = useCallback(() => { // Wrapped in useCallback
     if (!todayWorkout || !todayWorkout.exercises) return;
 
     for (let exIndex = 0; exIndex < todayWorkout.exercises.length; exIndex++) {
@@ -327,7 +387,7 @@ const App = () => {
       }
     }
     setMessage("ALL SETS COMPLETED! YEAH BUDDY! You crushed it!");
-  };
+  }, [todayWorkout]); // Added todayWorkout as dependency for useCallback
 
 
   return (
@@ -360,29 +420,54 @@ const App = () => {
           </div>
         )}
 
-        {/* Timer Section */}
+        {/* Total Gym Time Tracker (NEW) */}
+        <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800 text-center">
+          <h2 className="text-3xl font-bold mb-5 text-blue-300">Total Gym Time, YEAH BUDDY!</h2>
+          <div className="text-6xl font-extrabold text-blue-400 mb-5 border-2 border-dashed border-blue-500 rounded-lg p-4 inline-block min-w-[180px] select-none">
+            {formatTime(gymElapsedTime)}
+          </div>
+          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            {!gymTimerActive ? (
+              <button
+                onClick={startGymWorkoutTimer}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center text-lg"
+              >
+                <i className="fas fa-play-circle mr-2"></i> START WORKOUT!
+              </button>
+            ) : (
+              <button
+                onClick={endGymWorkoutTimer}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center text-lg"
+              >
+                <i className="fas fa-stop-circle mr-2"></i> END WORKOUT!
+              </button>
+            )}
+          </div>
+        </section>
+
+
+        {/* Rest Timer Section */}
         <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800 text-center">
             <h2 className="text-3xl font-bold mb-5 text-blue-300">Rest Timer, AIN'T NOTHIN' BUT A PEANUT!</h2>
             <div className="text-6xl font-extrabold text-blue-400 mb-5 border-2 border-dashed border-blue-500 rounded-lg p-4 inline-block min-w-[180px] select-none">
                 {formatTime(timeRemaining)}
             </div>
-            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4"> {/* Added mb-4 for space */}
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
                 <button
-                    onClick={startTimer}
+                    onClick={startRestTimer} // Renamed for clarity
                     disabled={timerActive}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                 >
                     <i className="fas fa-hourglass-start mr-2"></i> START REST!
                 </button>
                 <button
-                    onClick={resetTimer}
-                    disabled={!timerActive && timeRemaining === TOTAL_TIMER_DURATION}
+                    onClick={resetRestTimer} // Renamed for clarity
+                    disabled={!timerActive && timeRemaining === TOTAL_REST_DURATION}
                     className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                 >
                     <i className="fas fa-stopwatch mr-2"></i> RESET REST!
                 </button>
             </div>
-            {/* New Button: Scroll to First Empty Set */}
             <button
               onClick={scrollToFirstEmptySet}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-full sm:w-auto mx-auto"
