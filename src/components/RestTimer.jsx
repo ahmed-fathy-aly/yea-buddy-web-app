@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const REST_DURATION = 5; // 5 seconds for testing
+const REST_DURATION = 120; // 2 minutes in seconds
 
 const RestTimer = ({ scrollToFirstEmptySet }) => {
   const [secondsLeft, setSecondsLeft] = useState(REST_DURATION);

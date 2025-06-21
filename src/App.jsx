@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import WorkoutHeader from './components/WorkoutHeader';
 import MessageDisplay from './components/MessageDisplay';
 import GymTimer from './components/GymTimer';
 import RestTimer from './components/RestTimer';
@@ -138,10 +137,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100">
-      <WorkoutHeader />
       <main className="w-full max-w-3xl bg-zinc-800 p-6 sm:p-8 rounded-xl shadow-xl border border-zinc-700">
         <MessageDisplay loading={loading} error={error} message={message} />
-        <GymTimer />
+        <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
         <div ref={restTimerRef}>
           <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
         </div>

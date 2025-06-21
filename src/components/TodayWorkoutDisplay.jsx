@@ -24,20 +24,6 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
       <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-center text-blue-300">
         <i className="fas fa-calendar-alt mr-2 text-blue-400"></i>TODAY'S <span className="text-blue-500">MASSIVE WORKOUT!</span>
       </h2>
-      {totalSets > 0 && (
-        <div className="mb-6 p-4 bg-zinc-900 rounded-lg border border-zinc-800 shadow-inner">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-zinc-300 font-semibold">Workout Progress:</span>
-            <span className="text-blue-400 font-bold">{completedSets} / {totalSets} Sets ({progressPercentage}%)</span>
-          </div>
-          <div className="w-full bg-zinc-700 rounded-full h-2.5">
-            <div
-              className="bg-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
       {todayWorkout ? (
         <div className="border border-blue-700 p-6 rounded-xl bg-zinc-900 shadow-xl">
           <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-white">{todayWorkout.title}</h3>
