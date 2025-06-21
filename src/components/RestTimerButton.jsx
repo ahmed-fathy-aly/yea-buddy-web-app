@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const CIRCLE_SIZE = 80;
+const CIRCLE_SIZE = 96;
 const STROKE_WIDTH = 8;
 const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -69,7 +69,7 @@ const RestTimerButton = ({ onRestOver }) => {
         </div>
       )}
       <div className="fixed bottom-8 right-8 flex flex-col items-center z-50">
-        <div className="relative flex items-center justify-center" style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}>
+        <div className="relative flex items-center justify-center rounded-full overflow-hidden" style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}>
           <svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} className="absolute top-0 left-0" style={{ zIndex: 1 }}>
             <circle
               cx={CIRCLE_SIZE / 2}
@@ -94,13 +94,13 @@ const RestTimerButton = ({ onRestOver }) => {
             />
           </svg>
           <button
-            className={`w-20 h-20 rounded-full flex flex-col items-center justify-center text-lg font-bold shadow-lg border-4 border-zinc-700 focus:outline-none transition-all duration-300 ${timerRunning ? 'bg-sky-500 text-white animate-pulse ring-4 ring-sky-300/40' : 'bg-lime-400 text-zinc-900 hover:bg-lime-300'}`}
+            className={`w-24 h-24 rounded-full flex flex-col items-center justify-center text-base font-bold shadow-lg border-4 border-zinc-700 focus:outline-none transition-all duration-300 ${timerRunning ? 'bg-sky-500 text-white animate-pulse ring-4 ring-sky-300/40' : 'bg-lime-400 text-zinc-900 hover:bg-lime-300'}`}
             style={{ position: 'relative', zIndex: 2 }}
             onClick={handleToggle}
             type="button"
           >
-            {timerRunning ? 'RESTING' : 'REST'}
-            <span className="text-xs font-mono mt-1">
+            <span className="block leading-tight text-lg font-bold">{timerRunning ? 'RESTING' : 'REST'}</span>
+            <span className="text-sm font-mono mt-1">
               {minutes}:{seconds.toString().padStart(2, '0')}
             </span>
           </button>
