@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MessageDisplay from './components/MessageDisplay';
-import GymTimer from './components/GymTimer';
-import RestTimer from './components/RestTimer';
+import RestTimerButton from './components/RestTimerButton';
 import SuggestWorkoutSection from './components/SuggestWorkoutSection';
 import TodayWorkoutDisplay from './components/TodayWorkoutDisplay';
 import WorkoutFooter from './components/WorkoutFooter';
-import BackToRestTimerButton from './components/BackToRestTimerButton';
 import WorkoutProgressBar from './components/WorkoutProgressBar';
 
 const App = () => {
@@ -17,7 +15,6 @@ const App = () => {
   const [timerRunning, setTimerRunning] = useState(false);
   const saveTimerRef = useRef(null);
   const timerIntervalRef = useRef(null);
-  const restTimerRef = useRef(null);
   const setRefs = useRef({});
 
   const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
@@ -105,15 +102,6 @@ const App = () => {
     fetchTodayWorkout();
   }, [fetchTodayWorkout]);
 
-  // Scroll to RestTimer
-  const scrollToRestTimer = useCallback(() => {
-    if (restTimerRef.current) {
-      restTimerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      restTimerRef.current.classList.add('animate-pulse');
-      setTimeout(() => restTimerRef.current.classList.remove('animate-pulse'), 1000);
-    }
-  }, []);
-
   // Function to scroll to the first empty set
   const scrollToFirstEmptySet = useCallback(() => {
     if (!todayWorkout) return;
@@ -188,9 +176,6 @@ const App = () => {
           {/* <div className="w-full mb-4">
             <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
           </div> */}
-          <div ref={restTimerRef} className="w-full mb-4">
-            <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
-          </div>
           <SuggestWorkoutSection />
           <TodayWorkoutDisplay
             todayWorkout={todayWorkout}
@@ -201,8 +186,13 @@ const App = () => {
           />
         </main>
         <WorkoutFooter />
-        <BackToRestTimerButton onClick={scrollToRestTimer} />
       </div>
+      <RestTimerButton
+        onRestOver={scrollToFirstEmptySet}
+        timer={timer}
+        timerRunning={timerRunning}
+        onToggleTimer={() => setTimerRunning((r) => !r)}
+      />
     </>
   );
 };
