@@ -6,13 +6,19 @@ import SuggestWorkoutSection from './components/SuggestWorkoutSection';
 import TodayWorkoutDisplay from './components/TodayWorkoutDisplay';
 import WorkoutFooter from './components/WorkoutFooter';
 import BackToRestTimerButton from './components/BackToRestTimerButton';
+import WorkoutProgressBar from './components/WorkoutProgressBar';
 
 const App = () => {
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [timer, setTimer] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
   const saveTimerRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const restTimerRef = useRef(null);
+  const setRefs = useRef({});
 
   const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
@@ -99,9 +105,7 @@ const App = () => {
     fetchTodayWorkout();
   }, [fetchTodayWorkout]);
 
-  // Ref for scrolling to RestTimer
-  const restTimerRef = useRef(null);
-
+  // Scroll to RestTimer
   const scrollToRestTimer = useCallback(() => {
     if (restTimerRef.current) {
       restTimerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -109,9 +113,6 @@ const App = () => {
       setTimeout(() => restTimerRef.current.classList.remove('animate-pulse'), 1000);
     }
   }, []);
-
-  // Refs for each set row
-  const setRefs = useRef({});
 
   // Function to scroll to the first empty set
   const scrollToFirstEmptySet = useCallback(() => {
@@ -135,28 +136,74 @@ const App = () => {
     }
   }, [todayWorkout]);
 
+  // Calculate completed/total sets
+  const completedSets = todayWorkout
+    ? todayWorkout.exercises.reduce(
+        (acc, ex) =>
+          acc +
+          ex.sets.filter((set) => set.reps && set.weight).length,
+        0
+      )
+    : 0;
+  const totalSets = todayWorkout
+    ? todayWorkout.exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
+    : 0;
+
+  // Timer logic
+  useEffect(() => {
+    if (timerRunning) {
+      timerIntervalRef.current = setInterval(() => {
+        setTimer((t) => t + 1);
+      }, 1000);
+    } else if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [timerRunning]);
+
+  const handleStartTimer = () => {
+    if (!timerRunning) setTimerRunning(true);
+  };
+
+  const handleResetTimer = () => {
+    setTimerRunning(false);
+    setTimer(0);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100">
-      <main className="w-full max-w-3xl bg-zinc-800 p-6 sm:p-8 rounded-xl shadow-xl border border-zinc-700">
-        <MessageDisplay loading={loading} error={error} message={message} />
-        <div className="w-full mb-4">
-          <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
-        </div>
-        <div ref={restTimerRef} className="w-full mb-4">
-          <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
-        </div>
-        <SuggestWorkoutSection />
-        <TodayWorkoutDisplay
-          todayWorkout={todayWorkout}
-          loading={loading}
-          error={error}
-          handleSetChange={handleSetChange}
-          setRefs={setRefs}
-        />
-      </main>
-      <WorkoutFooter />
-      <BackToRestTimerButton onClick={scrollToRestTimer} />
-    </div>
+    <>
+      <WorkoutProgressBar
+        completedSets={completedSets}
+        totalSets={totalSets}
+        timer={timer}
+        timerRunning={timerRunning}
+        onStartTimer={handleStartTimer}
+        onResetTimer={handleResetTimer}
+      />
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100 pt-16">
+        <main className="w-full max-w-3xl bg-zinc-800 p-6 sm:p-8 rounded-xl shadow-xl border border-zinc-700">
+          <MessageDisplay loading={loading} error={error} message={message} />
+          {/* <div className="w-full mb-4">
+            <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
+          </div> */}
+          <div ref={restTimerRef} className="w-full mb-4">
+            <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
+          </div>
+          <SuggestWorkoutSection />
+          <TodayWorkoutDisplay
+            todayWorkout={todayWorkout}
+            loading={loading}
+            error={error}
+            handleSetChange={handleSetChange}
+            setRefs={setRefs}
+          />
+        </main>
+        <WorkoutFooter />
+        <BackToRestTimerButton onClick={scrollToRestTimer} />
+      </div>
+    </>
   );
 };
 
