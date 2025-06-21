@@ -1,9 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SetRow from './SetRow';
 
-const ExerciseBlock = ({ exercise, exIndex, handleSetChange, fetchingTips, getExerciseTips }) => {
+const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
+
+const ExerciseBlock = ({ exercise, exIndex, handleSetChange }) => {
+  const [tipsModalOpen, setTipsModalOpen] = useState(false);
+  const [fetchingTips, setFetchingTips] = useState(false);
+  const [exerciseTips, setExerciseTips] = useState('');
+  const [exerciseTipsError, setExerciseTipsError] = useState(null);
+  const [tipsAdditionalInput, setTipsAdditionalInput] = useState('');
+
   const completedSetsForExercise = exercise.sets ? exercise.sets.filter(set => set.reps > 0).length : 0;
   const totalSetsForExercise = exercise.sets ? exercise.sets.length : 0;
+
+  const getExerciseTips = async () => {
+    setFetchingTips(true);
+    setExerciseTips('');
+    setExerciseTipsError(null);
+    setTipsModalOpen(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/exercise-tips/${exercise.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ additional_input: tipsAdditionalInput }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+      const tips = await response.text();
+      setExerciseTips(tips);
+    } catch (err) {
+      setExerciseTipsError(`Couldn't get those tips: ${err.message}`);
+    } finally {
+      setFetchingTips(false);
+    }
+  };
 
   return (
     <div className="bg-zinc-800 p-5 rounded-lg shadow-md mb-5 border border-zinc-700">
@@ -34,12 +66,67 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, fetchingTips, getEx
       {exercise.id && (
         <div className="flex justify-center mt-4">
           <button
-            onClick={() => getExerciseTips(exercise.id)}
+            onClick={getExerciseTips}
             disabled={fetchingTips}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm"
           >
             <i className="fas fa-lightbulb mr-2"></i> GET TIPS FOR THIS EXERCISE, YEAH BUDDY!
           </button>
+        </div>
+      )}
+
+      {/* Modal for exercise tips */}
+      {tipsModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-800 rounded-lg shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-zinc-700">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-blue-300">EXERCISE TIPS</h2>
+              <button
+                onClick={() => setTipsModalOpen(false)}
+                className="text-zinc-500 hover:text-white transition-colors duration-200"
+              >
+                <i className="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+            <textarea
+              className="w-full p-3 border border-zinc-700 rounded-md bg-zinc-900 text-white placeholder-zinc-500 focus:ring-1 focus:ring-blue-500 transition duration-300 ease-in-out resize-y mb-4"
+              rows="3"
+              placeholder="Ask for specific tips..."
+              value={tipsAdditionalInput}
+              onChange={e => setTipsAdditionalInput(e.target.value)}
+            ></textarea>
+            <button
+              onClick={getExerciseTips}
+              disabled={fetchingTips}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-md mb-4"
+            >
+              {fetchingTips ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  GETTING TIPS...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-sync-alt mr-2"></i> REGENERATE TIPS
+                </>
+              )}
+            </button>
+            {fetchingTips && <p className="text-blue-400 text-center mb-4">GETTING THE KNOWLEDGE!</p>}
+            {exerciseTipsError && (
+              <p className="text-red-400 text-center mb-4">{exerciseTipsError}</p>
+            )}
+            <div className="bg-zinc-700 p-4 rounded-md border border-zinc-600 whitespace-pre-wrap text-zinc-200 text-sm leading-relaxed">
+              {exerciseTips || (fetchingTips ? "LOADING TIPS!" : "NO TIPS YET!")}
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setTipsModalOpen(false)}
+                className="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
