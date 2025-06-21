@@ -371,6 +371,19 @@ const WorkoutFooter = () => (
 );
 
 
+// --- Floating Back To Rest Timer Button ---
+const BackToRestTimerButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="fixed z-50 bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+    aria-label="Back to Rest Timer"
+    style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.25)' }}
+  >
+    {/* Unicode up arrow for reliability */}
+    <span className="text-2xl font-bold">▲</span>
+  </button>
+);
+
 // --- Main App Component (Refactored) ---
 const App = () => {
   // All state and core logic remains in the App component
@@ -657,26 +670,28 @@ const App = () => {
         }
       }
     }
-    setMessage("ALL SETS COMPLETED! YEAH BUDDY! You crushed it!");
-  }, [todayWorkout, setMessage]);
+    setMessage('ALL SETS COMPLETE! TIME TO REST, YEAH BUDDY!');
+    resetRestTimer();
+  }, [todayWorkout, resetRestTimer, setMessage]);
 
-
-  // --- Effects (same as before, but with corrected variable name) ---
+  // --- Timer Logic ---
   useEffect(() => {
     if (timerActive) {
       const interval = setInterval(() => {
-        const endTime = parseInt(localStorage.getItem(LOCAL_STORAGE_REST_TIMER_KEY));
         const now = Date.now();
-        const newTimeRemaining = Math.max(0, Math.floor((endTime - now) / 1000));
-        setTimeRemaining(newTimeRemaining);
-        if (newTimeRemaining === 0) {
-          resetRestTimer();
-          setMessage('IT\'S OVER! YEAH BUDDY! TIME TO WORK!');
-          if (Notification.permission === 'granted') {
-            new Notification('Workout Timer', {
-              body: 'YOUR REST IS OVER! LIGHT WEIGHT!',
-              icon: 'https://placehold.co/60x60/00FF00/FFFFFF?text=💪'
-            });
+        const endTime = localStorage.getItem(LOCAL_STORAGE_REST_TIMER_KEY);
+        if (endTime) {
+          const newTimeRemaining = Math.max(0, Math.floor((endTime - now) / 1000));
+          setTimeRemaining(newTimeRemaining);
+          if (newTimeRemaining === 0) {
+            resetRestTimer();
+            setMessage('IT\'S OVER! YEAH BUDDY! TIME TO WORK!');
+            if (Notification.permission === 'granted') {
+              new Notification('Workout Timer', {
+                body: 'YOUR REST IS OVER! LIGHT WEIGHT!',
+                icon: 'https://placehold.co/60x60/00FF00/FFFFFF?text=💪'
+              });
+            }
           }
         }
       }, 1000);
@@ -726,6 +741,18 @@ const App = () => {
     fetchTodayWorkout();
   }, [fetchTodayWorkout]); // Dependency
 
+  // Add a ref for the RestTimer section
+  const restTimerRef = useRef(null);
+
+  // Function to scroll to RestTimer
+  const scrollToRestTimer = useCallback(() => {
+    if (restTimerRef.current) {
+      restTimerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      restTimerRef.current.classList.add('animate-pulse');
+      setTimeout(() => restTimerRef.current.classList.remove('animate-pulse'), 1000);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100">
       <WorkoutHeader />
@@ -738,15 +765,18 @@ const App = () => {
           endGymWorkoutTimer={endGymWorkoutTimer} 
           formatTime={formatTime} 
         />
-        <RestTimer 
-          timerActive={timerActive} 
-          timeRemaining={timeRemaining} 
-          startRestTimer={startRestTimer} 
-          resetRestTimer={resetRestTimer} 
-          formatTime={formatTime} 
-          TOTAL_REST_DURATION={TOTAL_REST_DURATION} 
-          scrollToFirstEmptySet={scrollToFirstEmptySet} 
-        />
+        {/* Attach the ref here */}
+        <div ref={restTimerRef}>
+          <RestTimer 
+            timerActive={timerActive} 
+            timeRemaining={timeRemaining} 
+            startRestTimer={startRestTimer} 
+            resetRestTimer={resetRestTimer} 
+            formatTime={formatTime} 
+            TOTAL_REST_DURATION={TOTAL_REST_DURATION} 
+            scrollToFirstEmptySet={scrollToFirstEmptySet} 
+          />
+        </div>
         <SuggestWorkoutSection 
           loading={loading} 
           additionalInput={additionalInput} 
@@ -777,6 +807,8 @@ const App = () => {
         exerciseTips={exerciseTips} 
       />
       <WorkoutFooter />
+      {/* Floating Button */}
+      <BackToRestTimerButton onClick={scrollToRestTimer} />
     </div>
   );
 };
