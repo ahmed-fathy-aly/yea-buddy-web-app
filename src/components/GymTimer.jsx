@@ -88,7 +88,7 @@ const GymTimer = ({ todayWorkout }) => {
   const timeStr = formatTime(gymElapsedTime);
 
   return (
-    <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800 text-center w-full max-w-xs mx-auto">
+    <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800 text-center w-full mx-auto">
       <div className="flex justify-center mb-4">
         {!gymTimerActive ? (
           <button

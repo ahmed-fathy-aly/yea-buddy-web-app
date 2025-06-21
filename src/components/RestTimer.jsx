@@ -39,7 +39,7 @@ const RestTimer = ({ scrollToFirstEmptySet }) => {
 
   return (
     <div className="relative my-6 flex flex-col items-center w-full">
-      <div className="w-full max-w-xs bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl p-6 flex flex-col items-center">
+      <div className="w-full bg-zinc-900 border border-zinc-800 rounded-xl shadow-lg p-6 flex flex-col items-center">
         <button
           onClick={startTimer}
           className="mb-4 px-4 py-2 bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition font-semibold tracking-wide"

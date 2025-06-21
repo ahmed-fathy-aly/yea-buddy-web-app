@@ -139,8 +139,10 @@ const App = () => {
     <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100">
       <main className="w-full max-w-3xl bg-zinc-800 p-6 sm:p-8 rounded-xl shadow-xl border border-zinc-700">
         <MessageDisplay loading={loading} error={error} message={message} />
-        <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
-        <div ref={restTimerRef}>
+        <div className="w-full mb-4">
+          <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
+        </div>
+        <div ref={restTimerRef} className="w-full mb-4">
           <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
         </div>
         <SuggestWorkoutSection />
