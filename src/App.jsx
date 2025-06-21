@@ -85,14 +85,18 @@ const App = () => {
       clearTimeout(saveTimerRef.current);
     }
 
-    const updatedWorkout = JSON.parse(JSON.stringify(todayWorkout));
-    updatedWorkout.exercises[exIndex].sets[setIndex][field] = value;
-    setTodayWorkout(updatedWorkout);
+    setTodayWorkout(prevWorkout => {
+      if (!prevWorkout) return prevWorkout;
+      const updatedWorkout = JSON.parse(JSON.stringify(prevWorkout));
+      updatedWorkout.exercises[exIndex].sets[setIndex][field] = value;
 
-    saveTimerRef.current = setTimeout(() => {
-      saveWorkoutChanges(updatedWorkout);
-    }, 500);
-  }, [todayWorkout, saveWorkoutChanges]);
+      saveTimerRef.current = setTimeout(() => {
+        saveWorkoutChanges(updatedWorkout);
+      }, 500);
+
+      return updatedWorkout;
+    });
+  }, [saveWorkoutChanges]);
 
   // Fetch today's workout on mount
   useEffect(() => {
@@ -110,6 +114,31 @@ const App = () => {
     }
   }, []);
 
+  // Refs for each set row
+  const setRefs = useRef({});
+
+  // Function to scroll to the first empty set
+  const scrollToFirstEmptySet = useCallback(() => {
+    if (!todayWorkout) return;
+    for (let exIndex = 0; exIndex < todayWorkout.exercises.length; exIndex++) {
+      const exercise = todayWorkout.exercises[exIndex];
+      for (let setIndex = 0; setIndex < exercise.sets.length; setIndex++) {
+        const set = exercise.sets[setIndex];
+        // Adjust the fields as per your data structure (e.g., reps, weight)
+        if (!set.reps || !set.weight) {
+          const refKey = `${exIndex}-${setIndex}`;
+          const setRow = setRefs.current[refKey];
+          if (setRow && setRow.scrollIntoView) {
+            setRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setRow.classList.add('animate-pulse');
+            setTimeout(() => setRow.classList.remove('animate-pulse'), 1000);
+          }
+          return;
+        }
+      }
+    }
+  }, [todayWorkout]);
+
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100">
       <WorkoutHeader />
@@ -117,7 +146,7 @@ const App = () => {
         <MessageDisplay loading={loading} error={error} message={message} />
         <GymTimer />
         <div ref={restTimerRef}>
-          <RestTimer scrollToFirstEmptySet={() => {}} />
+          <RestTimer scrollToFirstEmptySet={scrollToFirstEmptySet} />
         </div>
         <SuggestWorkoutSection />
         <TodayWorkoutDisplay
@@ -125,6 +154,7 @@ const App = () => {
           loading={loading}
           error={error}
           handleSetChange={handleSetChange}
+          setRefs={setRefs}
         />
       </main>
       <WorkoutFooter />

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import ExerciseBlock from './ExerciseBlock';
 
-const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange }) => {
+const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, setRefs }) => {
   // Calculate progress locally
   const { completedSets, totalSets, progressPercentage } = useMemo(() => {
     if (!todayWorkout || !todayWorkout.exercises || todayWorkout.exercises.length === 0) {
@@ -55,6 +55,7 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange }) 
                 exercise={exercise}
                 exIndex={exIndex}
                 handleSetChange={handleSetChange}
+                setRefs={setRefs} // <-- Add this line
               />
             ))
           ) : (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise }) => {
+const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise, setRefs }) => {
   const [reps, setReps] = useState(set.reps);
   const [weight, setWeight] = useState(set.weight);
   const [unit, setUnit] = useState(set.unit);
@@ -28,7 +28,15 @@ const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise }) => {
   };
 
   return (
-    <div id={`set-${exIndex}-${setIndex}`} className={`p-4 rounded-md shadow-inner border ${reps > 0 ? 'bg-green-900 border-green-700' : 'bg-zinc-900 border-zinc-700'}`}>
+    <div
+      ref={el => {
+        if (setRefs && setRefs.current) {
+          setRefs.current[`${exIndex}-${setIndex}`] = el;
+        }
+      }}
+      id={`set-${exIndex}-${setIndex}`}
+      className={`p-4 rounded-md shadow-inner border ${reps > 0 ? 'bg-green-900 border-green-700' : 'bg-zinc-900 border-zinc-700'}`}
+    >
       <div className="flex flex-col sm:flex-row items-start sm:items-center mb-2">
         <span className="font-semibold text-blue-100 text-base mb-2 sm:mb-0 sm:mr-4 w-full sm:w-auto">Set {setIndex + 1}:</span>
         <div className="flex items-center mb-2 sm:mb-0 sm:mr-6">

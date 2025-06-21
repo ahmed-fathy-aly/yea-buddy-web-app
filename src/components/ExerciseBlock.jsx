@@ -3,7 +3,7 @@ import SetRow from './SetRow';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-const ExerciseBlock = ({ exercise, exIndex, handleSetChange }) => {
+const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs }) => {
   const [tipsModalOpen, setTipsModalOpen] = useState(false);
   const [fetchingTips, setFetchingTips] = useState(false);
   const [exerciseTips, setExerciseTips] = useState('');
@@ -56,7 +56,15 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange }) => {
         {exercise.sets && exercise.sets.length > 0 ? (
           <div className="space-y-3">
             {exercise.sets.map((set, setIndex) => (
-              <SetRow key={setIndex} set={set} exIndex={exIndex} setIndex={setIndex} handleSetChange={handleSetChange} exercise={exercise} />
+              <SetRow
+                key={setIndex}
+                set={set}
+                exIndex={exIndex}
+                setIndex={setIndex}
+                handleSetChange={handleSetChange}
+                setRefs={setRefs}
+                exercise={exercise}
+              />
             ))}
           </div>
         ) : (
