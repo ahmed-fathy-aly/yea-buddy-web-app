@@ -1,0 +1,64 @@
+import React from 'react';
+import ExerciseBlock from './ExerciseBlock';
+
+const TodayWorkoutDisplay = ({ todayWorkout, loading, error, fetchingTips, getExerciseTips, handleSetChange, completedSets, totalSets, progressPercentage }) => (
+  <section>
+    <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-center text-blue-300">
+      <i className="fas fa-calendar-alt mr-2 text-blue-400"></i>TODAY'S <span className="text-blue-500">MASSIVE WORKOUT!</span>
+    </h2>
+    {totalSets > 0 && (
+      <div className="mb-6 p-4 bg-zinc-900 rounded-lg border border-zinc-800 shadow-inner">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-zinc-300 font-semibold">Workout Progress:</span>
+          <span className="text-blue-400 font-bold">{completedSets} / {totalSets} Sets ({progressPercentage}%)</span>
+        </div>
+        <div className="w-full bg-zinc-700 rounded-full h-2.5">
+          <div
+            className="bg-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+      </div>
+    )}
+    {todayWorkout ? (
+      <div className="border border-blue-700 p-6 rounded-xl bg-zinc-900 shadow-xl">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-white">{todayWorkout.title}</h3>
+        {todayWorkout.subtitle && <p className="text-zinc-300 italic mb-4 text-base">{todayWorkout.subtitle}</p>}
+        {todayWorkout.ai_tips && (
+          <div className="bg-blue-900 border-l-4 border-blue-500 text-blue-200 p-4 rounded-md mb-6 shadow-sm text-sm sm:text-base">
+            <p className="font-bold mb-1">🧠 AI INSIGHTS, YEAH BUDDY!</p>
+            <p>{todayWorkout.ai_tips}</p>
+          </div>
+        )}
+        {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
+          todayWorkout.exercises.map((exercise, exIndex) => (
+            <ExerciseBlock
+              key={exercise.id || exIndex}
+              exercise={exercise}
+              exIndex={exIndex}
+              handleSetChange={handleSetChange}
+              fetchingTips={fetchingTips}
+              getExerciseTips={getExerciseTips}
+            />
+          ))
+        ) : (
+          <p className="text-zinc-500 text-center text-lg mt-8">
+            NO EXERCISES TODAY! LIGHT WEIGHT! Hit that "Get New Workout Plan" button and LET'S GO!
+            <br />
+            (Looking for workout for today: {new Date().toDateString()})
+          </p>
+        )}
+      </div>
+    ) : (
+      !loading && !error && (
+        <p className="text-zinc-500 text-center text-lg mt-8">
+          NO WORKOUT LOADED! WE NEED A PLAN! Hit that "Get New Workout Plan" button, LIGHT WEIGHT!
+          <br />
+          (Looking for workout for today: {new Date().toDateString()})
+        </p>
+      )
+    )}
+  </section>
+);
+
+export default TodayWorkoutDisplay;
