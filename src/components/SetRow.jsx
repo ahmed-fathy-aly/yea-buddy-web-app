@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
-const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise, setRefs }) => {
+const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) => {
   const [reps, setReps] = useState(set.reps);
   const [weight, setWeight] = useState(set.weight);
   const [unit, setUnit] = useState(set.unit);
 
   // Notify parent if needed
   const notifyChange = (field, value) => {
-    if (onSetChange) {
-      onSetChange(exIndex, setIndex, field, value);
+    if (handleSetChange) {
+      handleSetChange(exIndex, setIndex, field, value);
     }
   };
 
@@ -55,7 +55,7 @@ const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise, setRefs }) => {
               step="1"
               min="0"
               className="w-16 p-2 mx-1 border border-zinc-600 rounded-md bg-zinc-950 text-white text-center text-base focus:ring-1 focus:ring-blue-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              value={reps}
+              value={set.reps}
               onChange={(e) => handleRepsChange(parseInt(e.target.value) || 0)}
               aria-label={`Reps for ${exercise.name} Set ${setIndex + 1}`}
             />
@@ -77,7 +77,7 @@ const SetRow = ({ set, exIndex, setIndex, onSetChange, exercise, setRefs }) => {
             step="0.5"
             min="0"
             className="w-28 p-2 border border-zinc-600 rounded-md bg-zinc-950 text-white text-center text-base focus:ring-1 focus:ring-blue-500"
-            value={weight}
+            value={set.weight}
             onChange={(e) => handleWeightChange(parseFloat(e.target.value) || 0)}
             aria-label={`Weight for ${exercise.name} Set ${setIndex + 1}`}
           />

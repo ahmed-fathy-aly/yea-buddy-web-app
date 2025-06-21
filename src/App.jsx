@@ -84,16 +84,13 @@ const App = () => {
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
-
     setTodayWorkout(prevWorkout => {
       if (!prevWorkout) return prevWorkout;
       const updatedWorkout = JSON.parse(JSON.stringify(prevWorkout));
       updatedWorkout.exercises[exIndex].sets[setIndex][field] = value;
-
       saveTimerRef.current = setTimeout(() => {
         saveWorkoutChanges(updatedWorkout);
       }, 500);
-
       return updatedWorkout;
     });
   }, [saveWorkoutChanges]);
