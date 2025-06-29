@@ -5,6 +5,19 @@ const STROKE_WIDTH = 8;
 const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+function getProgressColor(progress) {
+  // progress: 1 = full, 0 = empty
+  if (progress > 0.5) {
+    // Green to yellow
+    const percent = (progress - 0.5) * 2; // 1 at full, 0 at 0.5
+    return `rgb(${255 - Math.round(155 * percent)}, 255, 80)`; // #a3ff50 to #ffff50
+  } else {
+    // Yellow to red
+    const percent = progress * 2; // 1 at 0.5, 0 at 0
+    return `rgb(255, ${255 - Math.round(205 * (1 - percent))}, 80)`; // #ffff50 to #ff5050
+  }
+}
+
 const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
   const [restTime, setRestTime] = useState(restDuration);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -58,6 +71,7 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
   // Progress for circular bar (full circle at start, empty at 0)
   const progress = restTime / restDuration;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+  const progressColor = getProgressColor(progress);
 
   // Format as mm:ss
   const minutes = Math.floor(restTime / 60);
@@ -69,6 +83,44 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
       {showOverlay && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 animate-fade-in">
           <span className="text-5xl font-extrabold text-cyan-300 drop-shadow-lg">REST OVER!</span>
+        </div>
+      )}
+      {/* Progress bar to the left of the button when running */}
+      {timerRunning && (
+        <div className="fixed bottom-8 left-0 flex items-center z-40" style={{height: CIRCLE_SIZE}}>
+          <div
+            className="rounded-full overflow-hidden transition-all duration-500"
+            style={{
+              width: `calc(100vw - 3.5rem - 2rem)`, // 3.5rem (button) + 2rem (gap)
+              height: CIRCLE_SIZE,
+              background: '#222',
+              position: 'relative',
+              marginRight: '2rem',
+              boxShadow: '0 2px 16px 0 #0004',
+            }}
+          >
+            <div
+              className="absolute left-0 top-0 h-full transition-all duration-500"
+              style={{
+                width: `${progress * 100}%`,
+                background: `linear-gradient(90deg, ${progressColor}, #222 100%)`,
+                borderRadius: '9999px',
+                zIndex: 1,
+                boxShadow: '0 0 16px 0 ' + progressColor,
+                transition: 'width 0.5s, background 0.5s',
+              }}
+            ></div>
+            {/* Empty bar background */}
+            <div
+              className="absolute left-0 top-0 w-full h-full"
+              style={{
+                background: '#222',
+                opacity: 0.3,
+                borderRadius: '9999px',
+                zIndex: 0,
+              }}
+            ></div>
+          </div>
         </div>
       )}
       <div className="fixed bottom-8 right-8 flex flex-col items-center z-50">
@@ -87,13 +139,13 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
               cy={CIRCLE_SIZE / 2}
               r={RADIUS}
               fill="none"
-              stroke={timerRunning ? '#38bdf8' : '#a3e635'}
+              stroke={timerRunning ? progressColor : '#a3e635'}
               strokeWidth={STROKE_WIDTH}
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={strokeDashoffset}
-              style={{ transition: 'stroke-dashoffset 0.5s linear' }}
+              style={{ transition: 'stroke-dashoffset 0.5s linear, stroke 0.5s' }}
               strokeLinecap="round"
-              filter={timerRunning ? 'drop-shadow(0 0 8px #38bdf8)' : 'drop-shadow(0 0 8px #a3e635)'}
+              filter={timerRunning ? `drop-shadow(0 0 8px ${progressColor})` : 'drop-shadow(0 0 8px #a3e635)'}
             />
           </svg>
           <button
@@ -108,7 +160,6 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
             </span>
           </button>
         </div>
-        {/* Removed the 'Done Resting' button */}
       </div>
     </>
   );
