@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-const SuggestWorkoutSection = () => {
+const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const [loading, setLoading] = useState(false);
   const [additionalInput, setAdditionalInput] = useState('');
 
@@ -15,7 +15,7 @@ const SuggestWorkoutSection = () => {
         body: JSON.stringify({ additional_input: additionalInput }),
       });
       setAdditionalInput('');
-      // Optionally: trigger a parent refresh or show a message here
+      if (onWorkoutSuggested) onWorkoutSuggested(); // <-- trigger parent refresh
     } catch (err) {
       // Optionally: handle error here
     } finally {

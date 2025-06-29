@@ -176,7 +176,7 @@ const App = () => {
           {/* <div className="w-full mb-4">
             <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
           </div> */}
-          <SuggestWorkoutSection />
+          <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} />
           <TodayWorkoutDisplay
             todayWorkout={todayWorkout}
             loading={loading}
