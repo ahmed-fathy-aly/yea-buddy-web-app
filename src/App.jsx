@@ -5,6 +5,7 @@ import SuggestWorkoutSection from './components/SuggestWorkoutSection';
 import TodayWorkoutDisplay from './components/TodayWorkoutDisplay';
 import WorkoutFooter from './components/WorkoutFooter';
 import WorkoutProgressBar from './components/WorkoutProgressBar';
+import ExerciseReplaceModal from './components/ExerciseReplaceModal';
 
 const App = () => {
   const [todayWorkout, setTodayWorkout] = useState(null);
@@ -239,6 +240,7 @@ const App = () => {
             error={error}
             handleSetChange={handleSetChange}
             setRefs={setRefs}
+            refreshWorkout={fetchTodayWorkout}
           />
         </main>
         <WorkoutFooter />

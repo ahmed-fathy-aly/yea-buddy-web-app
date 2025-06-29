@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import SetRow from './SetRow';
+import ExerciseReplaceModal from './ExerciseReplaceModal';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs }) => {
+const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWorkout }) => {
   const [tipsModalOpen, setTipsModalOpen] = useState(false);
   const [fetchingTips, setFetchingTips] = useState(false);
   const [exerciseTips, setExerciseTips] = useState('');
   const [exerciseTipsError, setExerciseTipsError] = useState(null);
   const [tipsAdditionalInput, setTipsAdditionalInput] = useState('');
+  const [replaceModalOpen, setReplaceModalOpen] = useState(false);
 
   const completedSetsForExercise = exercise.sets ? exercise.sets.filter(set => set.reps > 0).length : 0;
   const totalSetsForExercise = exercise.sets ? exercise.sets.length : 0;
@@ -72,13 +74,19 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs }) => {
         )}
       </div>
       {exercise.id && (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-4 space-x-2">
           <button
             onClick={getExerciseTips}
             disabled={fetchingTips}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm"
           >
             <i className="fas fa-lightbulb mr-2"></i> GET TIPS FOR THIS EXERCISE, YEAH BUDDY!
+          </button>
+          <button
+            onClick={() => setReplaceModalOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center text-sm"
+          >
+            <i className="fas fa-exchange-alt mr-2"></i> REPLACE EXERCISE
           </button>
         </div>
       )}
@@ -137,6 +145,14 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs }) => {
           </div>
         </div>
       )}
+
+      {/* Replace Exercise Modal */}
+      <ExerciseReplaceModal
+        exerciseId={exercise.id}
+        open={replaceModalOpen}
+        onClose={() => setReplaceModalOpen(false)}
+        onReplace={refreshWorkout}
+      />
     </div>
   );
 };
