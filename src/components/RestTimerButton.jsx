@@ -4,14 +4,17 @@ const CIRCLE_SIZE = 96;
 const STROKE_WIDTH = 8;
 const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const REST_DURATION = 120; // 120 seconds default
 
-const RestTimerButton = ({ onRestOver }) => {
-  const [restTime, setRestTime] = useState(REST_DURATION);
+const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
+  const [restTime, setRestTime] = useState(restDuration);
   const [timerRunning, setTimerRunning] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const intervalRef = useRef(null);
   const overlayTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    setRestTime(restDuration);
+  }, [restDuration]);
 
   useEffect(() => {
     if (timerRunning && restTime > 0) {
@@ -44,16 +47,16 @@ const RestTimerButton = ({ onRestOver }) => {
 
   const handleToggle = () => {
     if (timerRunning) {
-      setRestTime(REST_DURATION);
+      setRestTime(restDuration);
       setTimerRunning(false);
     } else {
-      if (restTime === 0) setRestTime(REST_DURATION);
+      if (restTime === 0) setRestTime(restDuration);
       setTimerRunning(true);
     }
   };
 
   // Progress for circular bar (full circle at start, empty at 0)
-  const progress = restTime / REST_DURATION;
+  const progress = restTime / restDuration;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
 
   // Format as mm:ss

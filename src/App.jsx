@@ -13,6 +13,10 @@ const App = () => {
   const [message, setMessage] = useState('');
   const [timer, setTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [restDuration, setRestDuration] = useState(120);
+  const [restInput, setRestInput] = useState("");
+  const [restLoading, setRestLoading] = useState(false);
+  const [restError, setRestError] = useState("");
   const saveTimerRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const setRefs = useRef({});
@@ -177,6 +181,58 @@ const App = () => {
             <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
           </div> */}
           <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} />
+
+          {/* Suggest Rest Time Section */}
+          <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
+            <h2 className="text-3xl font-bold mb-5 text-center text-lime-400">SUGGEST REST TIME</h2>
+            <textarea
+              className="w-full p-4 border border-lime-500 rounded-lg bg-zinc-950 text-lime-200 placeholder-lime-400 focus:ring-2 focus:ring-lime-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
+              rows="3"
+              placeholder="Describe your workout or needs for rest... (e.g. 'Heavy legs day', 'Supersets', etc.)"
+              value={restInput}
+              onChange={e => setRestInput(e.target.value)}
+              disabled={restLoading}
+            ></textarea>
+            <button
+              className="w-full bg-lime-400 hover:bg-lime-500 text-zinc-900 font-extrabold py-3.5 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide"
+              onClick={async () => {
+                setRestLoading(true);
+                setRestError("");
+                try {
+                  const res = await fetch("https://yea-buddy-be.onrender.com/suggest-rest-time", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_input: restInput })
+                  });
+                  if (!res.ok) throw new Error("Failed to get rest time");
+                  const data = await res.json();
+                  if (typeof data.rest_time_seconds === "number") {
+                    setRestDuration(data.rest_time_seconds);
+                  } else {
+                    setRestError("No rest time returned");
+                  }
+                } catch (err) {
+                  setRestError("Error: " + err.message);
+                } finally {
+                  setRestLoading(false);
+                }
+              }}
+              disabled={restLoading || !restInput.trim()}
+            >
+              {restLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-lime-700 mr-3"></div>
+                  SUGGESTING REST...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-bed mr-3 text-lime-700"></i> SUGGEST REST TIME
+                </>
+              )}
+            </button>
+            {restError && <div className="text-lime-300 mt-2">{restError}</div>}
+          </section>
+
           <TodayWorkoutDisplay
             todayWorkout={todayWorkout}
             loading={loading}
@@ -192,6 +248,7 @@ const App = () => {
         timer={timer}
         timerRunning={timerRunning}
         onToggleTimer={() => setTimerRunning((r) => !r)}
+        restDuration={restDuration}
       />
     </>
   );
