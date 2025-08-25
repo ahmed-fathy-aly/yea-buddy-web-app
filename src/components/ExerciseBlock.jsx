@@ -49,6 +49,14 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWor
           </span>
         )}
       </div>
+      <div className="exercise-targets">
+        <span>
+          Target Reps: {exercise.target_reps !== null && exercise.target_reps !== undefined ? exercise.target_reps : <em>Not set</em>}
+        </span>
+        <span style={{ marginLeft: '1em' }}>
+          Target Weight: {exercise.target_weight !== null && exercise.target_weight !== undefined ? exercise.target_weight : <em>Not set</em>}
+        </span>
+      </div>
       <p className="text-sm text-zinc-400 mb-1">Target Muscles: <span className="font-medium">{exercise.target_muscles || 'N/A'}</span></p>
       <p className="text-sm text-zinc-400 mb-1">Machine: <span className="font-medium">{exercise.machine || 'N/A'}</span></p>
       {exercise.attachments && <p className="text-sm text-zinc-400">Attachments: <span className="font-medium">{exercise.attachments}</span></p>}
