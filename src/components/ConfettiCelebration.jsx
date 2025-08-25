@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { playCelebrationSound } from './celebrationSound';
 import { fireExplosion, fireFireworks, fireStars } from './celebrationParticles';
 import { LightningBolts } from './celebrationLightning.jsx';
-import { FireBurst } from './celebrationFire.jsx';
-import { AnimatedBackground } from './celebrationBackground.jsx';
 
 const pulseGlow = {
   animation: 'pulseGlow 1.2s infinite',
@@ -65,8 +62,6 @@ const ConfettiCelebration = ({ show, message }) => {
 
   useEffect(() => {
     if (show) {
-      // Sound
-      playCelebrationSound();
       // Explosions, fireworks, stars
       setTimeout(() => fireExplosion(), 200);
       setTimeout(() => fireFireworks(), 600);
@@ -88,11 +83,9 @@ const ConfettiCelebration = ({ show, message }) => {
   }, [show]);
 
   if (!show) return null;
-  // 3D/zoom effect
-  const text3D = {
-    textShadow: '0 0 40px #e11d48, 0 0 20px #fff, 2px 2px 8px #18181b',
-    transform: 'perspective(400px) rotateY(-8deg) scale(1.08)',
-    ...zoomAnim,
+  // Simple text shadow for drama, no 3D/zoom effect
+  const textShadow = {
+    textShadow: '0 0 40px #e11d48, 0 0 20px #fff',
   };
   // Dynamic color
   const dynamicColor = colorCycle[colorIdx];
@@ -101,23 +94,21 @@ const ConfettiCelebration = ({ show, message }) => {
       <style>{styles}
         {`.confetti-shake { animation: screenShake 0.5s; }`}
       </style>
-      <AnimatedBackground show={show} />
   {/* Removed blurred dark overlay to prevent unwanted rectangle */}
-      <Confetti numberOfPieces={400} recycle={false} colors={colorCycle} shapes={["circle", "star", "square"]} />
-      <LightningBolts show={show} />
-      <FireBurst show={show} />
+  <Confetti numberOfPieces={120} recycle={false} colors={colorCycle} shapes={["circle", "star", "square"]} />
+  <LightningBolts show={show} />
       <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100vw', pointerEvents: 'none', zIndex: 2 }}>
         <div style={{ ...emojiAnim, fontSize: '4rem', textShadow: '0 0 40px #e11d48, 0 0 20px #fff', animation: 'textExplode 1s' }}>🔥🏆🎉</div>
-        <div style={{ fontSize: '4rem', color: dynamicColor, ...text3D, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s' }}>
+  <div style={{ fontSize: '4rem', color: dynamicColor, ...textShadow, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
           YEAH BUDDY!
         </div>
-        <div style={{ fontSize: '2.7rem', color: dynamicColor, ...text3D, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s' }}>
+  <div style={{ fontSize: '2.7rem', color: dynamicColor, ...textShadow, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
           LIGHT WEIGHT BABY!
         </div>
-        <div style={{ fontSize: '2.2rem', color: dynamicColor, ...text3D, fontWeight: '800', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s' }}>
+  <div style={{ fontSize: '2.2rem', color: dynamicColor, ...textShadow, fontWeight: '800', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
           {message ? message.toUpperCase() : 'NEW PERSONAL BEST!'}
         </div>
-        <div style={{ fontSize: '2rem', marginTop: '1.2rem', color: dynamicColor, ...text3D, fontWeight: '900', textShadow: '0 0 20px #fff', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s' }}>
+  <div style={{ fontSize: '2rem', marginTop: '1.2rem', color: dynamicColor, ...textShadow, fontWeight: '900', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
           NOTHING BUT A PEANUT!
         </div>
       </div>
