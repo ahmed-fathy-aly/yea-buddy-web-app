@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import ConfettiCelebration from './ConfettiCelebration';
 import SetRow from './SetRow';
 import ExerciseReplaceModal from './ExerciseReplaceModal';
 
@@ -11,6 +12,21 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWor
   const [exerciseTipsError, setExerciseTipsError] = useState(null);
   const [tipsAdditionalInput, setTipsAdditionalInput] = useState('');
   const [replaceModalOpen, setReplaceModalOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiMsg, setConfettiMsg] = useState('');
+  const celebrationTimeout = useRef(null);
+
+  // Handler for personal best (debounced)
+  const handlePersonalBest = ({ reps, weight }) => {
+    if (celebrationTimeout.current) {
+      clearTimeout(celebrationTimeout.current);
+    }
+    celebrationTimeout.current = setTimeout(() => {
+      setConfettiMsg(`🎉 New Personal Best! ${reps} reps @ ${weight} ${exercise.sets[0]?.unit || ''}`);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4000);
+    }, 2000);
+  };
 
   const completedSetsForExercise = exercise.sets ? exercise.sets.filter(set => set.reps > 0).length : 0;
   const totalSetsForExercise = exercise.sets ? exercise.sets.length : 0;
@@ -68,7 +84,7 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWor
             {exercise.sets.map((set, setIndex) => (
               <SetRow
                 key={setIndex}
-                set={set}
+                set={{ ...set, onPersonalBest: handlePersonalBest }}
                 exIndex={exIndex}
                 setIndex={setIndex}
                 handleSetChange={handleSetChange}
@@ -161,6 +177,7 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWor
         onClose={() => setReplaceModalOpen(false)}
         onReplace={refreshWorkout}
       />
+      <ConfettiCelebration show={showConfetti} message={confettiMsg} />
     </div>
   );
 };

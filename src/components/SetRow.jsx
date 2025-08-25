@@ -4,6 +4,11 @@ const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) 
   const [reps, setReps] = useState(set.reps);
   const [weight, setWeight] = useState(set.weight);
   const [unit, setUnit] = useState(set.unit);
+  // Personal best detection
+  const targetReps = exercise.target_reps;
+  const targetWeight = exercise.target_weight;
+  // Callback for celebration
+  const { onPersonalBest } = set;
 
   // Notify parent if needed
   const notifyChange = (field, value) => {
@@ -15,11 +20,24 @@ const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) 
   const handleRepsChange = (value) => {
     setReps(value);
     notifyChange('reps', value);
+    checkPersonalBest(value, weight);
   };
 
   const handleWeightChange = (value) => {
     setWeight(value);
     notifyChange('weight', value);
+    checkPersonalBest(reps, value);
+  };
+
+  // Check if new input beats personal best
+  const checkPersonalBest = (newReps, newWeight) => {
+    if (targetReps == null || targetWeight == null) return;
+    // Beat personal best: more reps at same weight, or more weight at same reps
+    const beatByReps = (newWeight === targetWeight && newReps > targetReps);
+    const beatByWeight = (newReps === targetReps && newWeight > targetWeight);
+    if ((beatByReps || beatByWeight) && typeof onPersonalBest === 'function') {
+      onPersonalBest({ reps: newReps, weight: newWeight });
+    }
   };
 
   const handleUnitChange = (value) => {
