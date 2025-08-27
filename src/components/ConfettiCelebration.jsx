@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { fireExplosion, fireFireworks, fireStars } from './celebrationParticles';
-import { LightningBolts } from './celebrationLightning.jsx';
+// Removed extra particle effects and LightningBolts for performance
 
 const pulseGlow = {
   animation: 'pulseGlow 1.2s infinite',
@@ -62,10 +61,6 @@ const ConfettiCelebration = ({ show, message }) => {
 
   useEffect(() => {
     if (show) {
-      // Explosions, fireworks, stars
-      setTimeout(() => fireExplosion(), 200);
-      setTimeout(() => fireFireworks(), 600);
-      setTimeout(() => fireStars(), 1200);
       // Screen shake
       document.body.classList.add('confetti-shake');
       setTimeout(() => document.body.classList.remove('confetti-shake'), 700);
@@ -94,22 +89,17 @@ const ConfettiCelebration = ({ show, message }) => {
       <style>{styles}
         {`.confetti-shake { animation: screenShake 0.5s; }`}
       </style>
-  {/* Removed blurred dark overlay to prevent unwanted rectangle */}
+  {/* Only confetti animation retained for performance */}
   <Confetti numberOfPieces={120} recycle={false} colors={colorCycle} shapes={["circle", "star", "square"]} />
-  <LightningBolts show={show} />
-      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100vw', pointerEvents: 'none', zIndex: 2 }}>
-        <div style={{ ...emojiAnim, fontSize: '4rem', textShadow: '0 0 40px #e11d48, 0 0 20px #fff', animation: 'textExplode 1s' }}>🔥🏆🎉</div>
-  <div style={{ fontSize: '4rem', color: dynamicColor, ...textShadow, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
-          YEAH BUDDY!
+      <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100vw', pointerEvents: 'none', zIndex: 2 }}>
+        <div style={{ fontSize: '4.2rem', fontWeight: 900, color: dynamicColor, textShadow: '0 0 16px #fff, 0 0 32px #e11d48', marginBottom: '1rem', fontFamily: 'Arial Black, Impact, Oswald, sans-serif', letterSpacing: '2px' }}>
+          🎉
         </div>
-  <div style={{ fontSize: '2.7rem', color: dynamicColor, ...textShadow, fontWeight: '900', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
-          LIGHT WEIGHT BABY!
+        <div style={{ fontSize: '3rem', fontWeight: 900, color: dynamicColor, textShadow: '0 0 12px #fff', marginBottom: '0.7rem', fontFamily: 'Arial Black, Impact, Oswald, sans-serif', letterSpacing: '1px' }}>
+          Personal Best
         </div>
-  <div style={{ fontSize: '2.2rem', color: dynamicColor, ...textShadow, fontWeight: '800', marginBottom: '1.2rem', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
-          {message ? message.toUpperCase() : 'NEW PERSONAL BEST!'}
-        </div>
-  <div style={{ fontSize: '2rem', marginTop: '1.2rem', color: dynamicColor, ...textShadow, fontWeight: '900', fontFamily: 'Impact, Oswald, Arial Black, sans-serif', textTransform: 'uppercase', letterSpacing: '3px', animation: 'pulseGlow 1.2s infinite, textExplode 1s', border: 'none', boxShadow: 'none' }}>
-          NOTHING BUT A PEANUT!
+        <div style={{ fontSize: '2.4rem', fontWeight: 900, color: dynamicColor, textShadow: '0 0 10px #fff', marginBottom: '0.7rem', fontFamily: 'Arial Black, Impact, Oswald, sans-serif', letterSpacing: '1px' }}>
+          {message ? message.replace(/new personal best:?\s*/i, '').replace(/^!+\s*/, '') : ''}
         </div>
       </div>
     </div>
