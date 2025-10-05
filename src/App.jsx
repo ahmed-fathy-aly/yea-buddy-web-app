@@ -129,18 +129,53 @@ const App = () => {
     }
   }, [todayWorkout]);
 
-  // Calculate completed/total sets
-  const completedSets = todayWorkout
-    ? todayWorkout.exercises.reduce(
-        (acc, ex) =>
-          acc +
-          ex.sets.filter((set) => set.reps && set.weight).length,
-        0
-      )
-    : 0;
-  const totalSets = todayWorkout
-    ? todayWorkout.exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
-    : 0;
+  // Calculate completed/total sets using group-based logic
+  const calculateGroupBasedProgress = (workout, chosenExercises = {}) => {
+    if (!workout || !workout.exercises || workout.exercises.length === 0) {
+      return { completedSets: 0, totalSets: 0 };
+    }
+
+    let total = 0;
+    let completed = 0;
+    
+    // Group all exercises
+    const allGroups = {};
+    workout.exercises.forEach(exercise => {
+      const groupName = exercise.exercise_group || 'Ungrouped';
+      if (!allGroups[groupName]) {
+        allGroups[groupName] = [];
+      }
+      allGroups[groupName].push(exercise);
+    });
+
+    // Calculate progress for each group
+    Object.entries(allGroups).forEach(([groupName, exercises]) => {
+      const chosenExerciseId = chosenExercises[groupName];
+      let exerciseToCount;
+
+      if (chosenExerciseId) {
+        // If an exercise is chosen, use that one
+        exerciseToCount = exercises.find(ex => ex.id === chosenExerciseId);
+      } else {
+        // If no exercise is chosen, use the one with the maximum number of sets
+        exerciseToCount = exercises.reduce((maxEx, currentEx) => {
+          const maxSets = maxEx?.sets?.length || 0;
+          const currentSets = currentEx?.sets?.length || 0;
+          return currentSets > maxSets ? currentEx : maxEx;
+        }, exercises[0]);
+      }
+
+      // Count sets from the selected exercise for this group
+      if (exerciseToCount && exerciseToCount.sets) {
+        total += exerciseToCount.sets.length;
+        completed += exerciseToCount.sets.filter(set => set.reps > 0).length;
+      }
+    });
+
+    return { completedSets: completed, totalSets: total };
+  };
+
+  const { completedSets, totalSets } = calculateGroupBasedProgress(todayWorkout);
 
   // Timer logic
   useEffect(() => {

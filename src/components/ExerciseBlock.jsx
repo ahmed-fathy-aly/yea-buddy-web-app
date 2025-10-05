@@ -5,7 +5,17 @@ import ExerciseReplaceModal from './ExerciseReplaceModal';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWorkout }) => {
+const ExerciseBlock = ({ 
+  exercise, 
+  exIndex, 
+  handleSetChange, 
+  setRefs, 
+  refreshWorkout, 
+  onChooseExercise,
+  exerciseGroup,
+  isChosen,
+  hasMultipleInGroup 
+}) => {
   const [tipsModalOpen, setTipsModalOpen] = useState(false);
   const [fetchingTips, setFetchingTips] = useState(false);
   const [exerciseTips, setExerciseTips] = useState('');
@@ -98,7 +108,20 @@ const ExerciseBlock = ({ exercise, exIndex, handleSetChange, setRefs, refreshWor
         )}
       </div>
       {exercise.id && (
-        <div className="flex justify-center mt-4 space-x-2">
+        <div className="flex flex-col mt-4 space-y-2">
+          {hasMultipleInGroup && !isChosen && (
+            <button
+              onClick={() => onChooseExercise(exercise.id, exerciseGroup)}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center text-sm"
+            >
+              <i className="fas fa-check mr-2"></i> CHOOSE THIS ONE!
+            </button>
+          )}
+          {isChosen && (
+            <div className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center justify-center text-sm">
+              <i className="fas fa-star mr-2"></i> CHOSEN!
+            </div>
+          )}
           <button
             onClick={getExerciseTips}
             disabled={fetchingTips}
