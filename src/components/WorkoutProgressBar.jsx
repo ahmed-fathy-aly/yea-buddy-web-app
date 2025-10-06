@@ -18,28 +18,29 @@ const WorkoutProgressBar = ({
   };
 
   return (
-    <div className="sticky top-0 left-0 right-0 w-full z-50 bg-gradient-to-r from-green-900 via-zinc-900 to-green-900 border-b border-zinc-700 shadow-lg flex items-center px-4 py-3 backdrop-blur-md">
+    <div className="sticky top-0 left-0 right-0 w-full z-50 glass border-b border-cyan-500/20 shadow-2xl flex items-center px-4 py-3 backdrop-blur-xl">
       <div className="flex-1 flex items-center">
-        <span className="mr-3 font-bold text-base text-green-300 tracking-wide drop-shadow">
-          Sets: <span className="text-green-400">{completedSets}</span> / <span className="text-green-200">{totalSets}</span>
+        <span className="mr-3 font-bold text-base text-cyan-300 tracking-wide drop-shadow">
+          <i className="fas fa-chart-line mr-2 text-cyan-400"></i>
+          Sets: <span className="text-cyan-400">{completedSets}</span> / <span className="text-cyan-200">{totalSets}</span>
         </span>
-        <div className="flex-1 h-4 bg-zinc-800 rounded-full overflow-hidden mx-3 shadow-inner border border-green-900">
+        <div className="flex-1 h-4 glass rounded-full overflow-hidden mx-3 shadow-inner border border-cyan-500/30">
           <div
-            className="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-700 animate-pulse transition-all duration-500"
+            className="h-full bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 animate-pulse transition-all duration-500 neon-glow"
             style={{ width: `${percent}%` }}
           />
         </div>
       </div>
       <div className="flex items-center ml-6">
-        <span className="font-mono text-lg text-green-200 mr-3 tracking-widest shadow-sm">
+        <span className="font-mono text-lg text-cyan-200 mr-3 tracking-widest shadow-sm">
           {formatTime(timer)}
         </span>
         <button
           onClick={timerRunning ? onResetTimer : onStartTimer}
-          className={`ml-1 px-3 py-1.5 rounded-full text-sm font-extrabold shadow-md border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 ${
+          className={`ml-1 px-3 py-1.5 rounded-full text-sm font-extrabold shadow-md border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
             timerRunning
-              ? 'bg-green-700 border-green-400 text-white hover:bg-green-800'
-              : 'bg-zinc-800 border-green-700 text-green-200 hover:bg-green-600 hover:text-white'
+              ? 'bg-cyan-700 border-cyan-400 text-white hover:bg-cyan-800 neon-glow'
+              : 'glass border-cyan-500/30 text-cyan-200 hover:bg-cyan-600/20 hover:text-white'
           }`}
         >
           {timerRunning ? (

@@ -108,12 +108,29 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
 
   return (
     <section>
-      <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-center text-blue-300">
-        <i className="fas fa-calendar-alt mr-2 text-blue-400"></i>DAILY <span className="text-blue-500">OPTIMIZATION PROTOCOL</span>
+      <h2 className="text-2xl sm:text-4xl font-extrabold mb-6 text-center text-cyan-300 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <div className="flex items-center">
+          <div className="w-4 h-4 bg-cyan-400 rounded-full mr-3 animate-pulse"></div>
+          <i className="fas fa-microchip mr-2 text-cyan-400"></i>
+          <span className="whitespace-nowrap">QUANTUM</span>
+        </div>
+        <div className="flex items-center">
+          <span className="text-purple-400 whitespace-nowrap">OPTIMIZATION</span>
+          <span className="hidden sm:inline ml-2">PROTOCOL</span>
+          <span className="sm:hidden ml-2">SYS</span>
+          <div className="w-4 h-4 bg-purple-400 rounded-full ml-3 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+        </div>
       </h2>
       {todayWorkout ? (
-        <div className="border border-blue-700 p-6 rounded-xl bg-zinc-900 shadow-xl">
-          <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-white">{todayWorkout.title}</h3>
+        <div className="border border-cyan-500/30 p-6 rounded-xl glass-card shadow-2xl relative overflow-hidden">
+          {/* Holographic overlay */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400"></div>
+          <div className="absolute inset-0 holographic opacity-20"></div>
+
+          <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-white relative z-10 flex items-center">
+            <i className="fas fa-dna mr-3 text-cyan-400"></i>
+            {todayWorkout.title}
+          </h3>
           {todayWorkout.subtitle && <p className="text-zinc-300 italic mb-4 text-base">{todayWorkout.subtitle}</p>}
           {todayWorkout.ai_tips && (
             <div className="bg-blue-900 border-l-4 border-blue-500 text-blue-200 p-4 rounded-md mb-6 shadow-sm text-sm sm:text-base">
@@ -122,23 +139,24 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
             </div>
           )}
           {todayWorkout.exercises && todayWorkout.exercises.length > 0 ? (
-            <div>
+            <div className="relative z-10">
               {/* Tab Navigation */}
               {exerciseGroups.length > 1 && (
                 <div className="mb-6">
-                  <div className="flex flex-wrap border-b border-zinc-700">
+                  <div className="flex flex-wrap border-b border-cyan-500/30">
                     {exerciseGroups.map((group, index) => (
                       <button
                         key={index}
                         onClick={() => setActiveTab(index)}
-                        className={`px-4 py-2 font-medium text-sm transition-colors duration-200 border-b-2 mr-2 mb-2 ${
+                        className={`px-4 py-2 font-medium text-sm transition-all duration-300 border-b-2 mr-2 mb-2 rounded-t-lg ${
                           activeTab === index
-                            ? 'text-blue-400 border-blue-400 bg-blue-900/20'
-                            : 'text-zinc-400 border-transparent hover:text-blue-300 hover:border-blue-500'
+                            ? 'text-cyan-300 border-cyan-400 bg-cyan-900/20 neon-glow'
+                            : 'text-cyan-400/60 border-transparent hover:text-cyan-300 hover:border-cyan-500/50 hover:bg-cyan-900/10'
                         }`}
                       >
+                        <i className="fas fa-circuit-board mr-2"></i>
                         {group.name}
-                        <span className="ml-2 text-xs bg-zinc-700 px-2 py-1 rounded-full">
+                        <span className="ml-2 text-xs bg-cyan-900/50 px-2 py-1 rounded-full border border-cyan-500/30">
                           {group.exercises.length}
                         </span>
                       </button>

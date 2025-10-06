@@ -141,8 +141,24 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   };
 
   return (
-    <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
-      <h2 className="text-3xl font-bold mb-5 text-center text-blue-300">DAILY PROTOCOL GENERATOR</h2>
+    <section className="mb-10 p-6 glass-card rounded-xl shadow-2xl border border-cyan-500/20 relative overflow-hidden">
+      {/* Holographic overlay */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400"></div>
+      <div className="absolute inset-0 holographic opacity-10"></div>
+
+      <h2 className="text-2xl sm:text-3xl font-bold mb-5 text-center text-cyan-300 relative z-10 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <div className="flex items-center">
+          <div className="w-3 h-3 bg-cyan-400 rounded-full mr-3 animate-pulse"></div>
+          <i className="fas fa-brain mr-2 text-cyan-400"></i>
+          <span className="whitespace-nowrap">QUANTUM</span>
+        </div>
+        <div className="flex items-center">
+          <span className="text-purple-400 whitespace-nowrap">PROTOCOL</span>
+          <span className="hidden sm:inline ml-2">GENERATOR</span>
+          <span className="sm:hidden ml-2">GEN</span>
+          <div className="w-3 h-3 bg-purple-400 rounded-full ml-3 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+        </div>
+      </h2>
       
       <MuscleSelectionGrid 
         selectedMuscles={selectedMuscles}
@@ -151,31 +167,31 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       />
       
       <textarea
-        className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-950 text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
+        className="w-full p-4 border border-cyan-500/30 rounded-lg bg-slate-900/50 text-cyan-100 placeholder-cyan-400/60 focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base backdrop-blur-sm relative z-10"
         rows="4"
         placeholder="Neural input: Specify parameters or leave blank for automated protocol"
         value={additionalInput}
         onChange={(e) => setAdditionalInput(e.target.value)}
       ></textarea>
-      <div className="flex items-center mb-4">
-        <span className="text-blue-200 font-semibold text-base mr-3">Dry Run:</span>
+      <div className="flex items-center mb-4 relative z-10">
+        <span className="text-cyan-200 font-semibold text-base mr-3">Dry Run:</span>
         <button
           type="button"
           onClick={() => setDryRun(!dryRun)}
-          className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${dryRun ? 'bg-blue-600' : 'bg-zinc-700'}`}
+          className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${dryRun ? 'bg-cyan-600' : 'bg-slate-700'}`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-300 ${dryRun ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </button>
-        <span className={`ml-3 text-sm font-medium ${dryRun ? 'text-blue-400' : 'text-zinc-400'}`}>
+        <span className={`ml-3 text-sm font-medium ${dryRun ? 'text-cyan-400' : 'text-cyan-400/60'}`}>
           {dryRun ? 'Simulation Mode' : 'Execute Protocol'}
         </span>
       </div>
       <button
         onClick={getMuscleRatings}
         disabled={ratingsLoading}
-        className="w-full mb-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base tracking-wide"
+        className="w-full mb-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base tracking-wide neon-glow relative z-10"
       >
         {ratingsLoading ? (
           <>
@@ -191,7 +207,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       <button
         onClick={suggestNewWorkout}
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide"
+        className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-slate-900 font-extrabold py-3.5 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide neon-glow relative z-10"
       >
         {loading ? (
           <>
@@ -206,21 +222,20 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       </button>
       <button
         onClick={openHistory}
-        className="w-full mt-4 bg-zinc-700 hover:bg-zinc-800 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out flex items-center justify-center text-base tracking-wide"
+        className="w-full mt-4 bg-slate-700/50 hover:bg-slate-600/50 text-cyan-300 font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out flex items-center justify-center text-base tracking-wide border border-cyan-500/30 relative z-10"
       >
         <i className="fas fa-history mr-2"></i> HISTORY
       </button>
 
-      {/* Streaming status/results UI */}
       {streamingStatus.length > 0 && streamingStatus[streamingStatus.length-1]?.nextStep !== 'Done' && (
-        <div className="mb-6 mt-8 p-4 bg-zinc-950 border border-blue-800 rounded-lg">
+        <div className="mb-6 mt-8 p-4 glass-card border border-cyan-500/30 rounded-lg relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <div className="font-bold text-blue-400 text-base flex items-center">
-              <span className="mr-2"><i className="fas fa-robot animate-pulse"></i></span>
+            <div className="font-bold text-cyan-400 text-base flex items-center">
+              <span className="mr-2"><i className="fas fa-robot animate-pulse text-cyan-400"></i></span>
               Progress
             </div>
             <button
-              className="text-xs text-blue-300 underline focus:outline-none"
+              className="text-xs text-cyan-300 underline focus:outline-none"
               onClick={() => setProgressFolded(f => !f)}
             >
               {progressFolded ? 'Show All' : 'Hide All'}
@@ -257,12 +272,11 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           </div>
         </div>
       )}
-      {/* Suggested Workout UI - show parsed card if available */}
       {suggestedWorkout && (
-        <div className="mb-6 mt-4 p-5 bg-gradient-to-br from-blue-900 via-zinc-900 to-blue-800 border border-blue-700 rounded-xl shadow">
+        <div className="mb-6 mt-4 p-5 glass-card border border-cyan-500/30 rounded-xl shadow-2xl relative z-10">
           <div className="flex items-center mb-2">
-            <span className="font-bold text-blue-300 text-lg mr-2">Suggested Workout</span>
-            <span className="text-blue-400"><i className="fas fa-dumbbell"></i></span>
+            <span className="font-bold text-cyan-300 text-lg mr-2">Suggested Workout</span>
+            <span className="text-cyan-400"><i className="fas fa-dumbbell"></i></span>
           </div>
           <div className="text-white font-bold text-xl mb-1">{suggestedWorkout.title || 'Workout'}</div>
           <div className="text-blue-200 mb-3 italic">{suggestedWorkout.subtitle}</div>
@@ -296,16 +310,19 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
         </div>
       )}
       {showHistory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="bg-zinc-900 p-8 rounded-xl shadow-lg max-w-lg w-full relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="glass-card p-8 rounded-2xl shadow-2xl max-w-lg w-full relative border border-cyan-500/20">
             <button
               onClick={closeHistory}
-              className="absolute top-2 right-2 text-zinc-400 hover:text-white text-2xl"
+              className="absolute top-2 right-2 text-cyan-400 hover:text-cyan-300 text-2xl"
               aria-label="Close"
             >
               &times;
             </button>
-            <h3 className="text-2xl font-bold mb-4 text-blue-300 text-center">Workout History (Last 28 Days)</h3>
+            <h3 className="text-2xl font-bold mb-4 text-cyan-300 text-center flex items-center justify-center">
+              <i className="fas fa-history mr-2"></i>
+              Workout History (Last 28 Days)
+            </h3>
             {historyLoading ? (
               <div className="text-center text-blue-400">Loading...</div>
             ) : historyError ? (

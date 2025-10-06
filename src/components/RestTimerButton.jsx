@@ -81,29 +81,29 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
     <>
       {/* Fullscreen overlay when timer finishes */}
       {showOverlay && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 animate-fade-in">
-          <span className="text-5xl font-extrabold text-cyan-300 drop-shadow-lg">REST OVER!</span>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center glass animate-fade-in">
+          <span className="text-6xl font-extrabold text-cyan-300 drop-shadow-lg neon-glow">REST COMPLETE!</span>
         </div>
       )}
       {/* Progress bar to the left of the button when running */}
       {timerRunning && (
         <div className="fixed bottom-8 left-0 flex items-center z-40" style={{height: CIRCLE_SIZE}}>
           <div
-            className="rounded-full overflow-hidden transition-all duration-500"
+            className="rounded-full overflow-hidden transition-all duration-500 glass"
             style={{
               width: `calc(100vw - 3.5rem - 2rem)`, // 3.5rem (button) + 2rem (gap)
               height: CIRCLE_SIZE,
-              background: '#222',
               position: 'relative',
               marginRight: '2rem',
-              boxShadow: '0 2px 16px 0 #0004',
+              boxShadow: '0 2px 16px 0 rgba(0, 255, 255, 0.1)',
+              border: '1px solid rgba(0, 255, 255, 0.2)',
             }}
           >
             <div
               className="absolute left-0 top-0 h-full transition-all duration-500"
               style={{
                 width: `${progress * 100}%`,
-                background: `linear-gradient(90deg, ${progressColor}, #222 100%)`,
+                background: `linear-gradient(90deg, ${progressColor}, rgba(0, 255, 255, 0.1) 100%)`,
                 borderRadius: '9999px',
                 zIndex: 1,
                 boxShadow: '0 0 16px 0 ' + progressColor,
@@ -114,8 +114,7 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
             <div
               className="absolute left-0 top-0 w-full h-full"
               style={{
-                background: '#222',
-                opacity: 0.3,
+                background: 'rgba(0, 255, 255, 0.05)',
                 borderRadius: '9999px',
                 zIndex: 0,
               }}
@@ -149,7 +148,11 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
             />
           </svg>
           <button
-            className={`w-24 h-24 rounded-full flex flex-col items-center justify-center text-base font-bold shadow-lg border-4 border-zinc-700 focus:outline-none transition-all duration-300 ${timerRunning ? 'bg-sky-500 text-white animate-pulse ring-4 ring-sky-300/40' : 'bg-lime-400 text-zinc-900 hover:bg-lime-300'}`}
+            className={`w-24 h-24 rounded-full flex flex-col items-center justify-center text-base font-bold shadow-2xl border-4 focus:outline-none transition-all duration-300 neon-glow ${
+              timerRunning
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white animate-pulse ring-4 ring-cyan-300/40 border-cyan-400'
+                : 'glass border-cyan-500/50 text-cyan-200 hover:bg-cyan-500/20 hover:text-white'
+            }`}
             style={{ position: 'relative', zIndex: 2 }}
             onClick={handleToggle}
             type="button"

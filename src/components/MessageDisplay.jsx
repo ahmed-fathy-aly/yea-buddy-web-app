@@ -4,18 +4,22 @@ const MessageDisplay = ({ loading, error, message }) => (
   <>
     {loading && (
       <div className="flex items-center justify-center p-4 my-4">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
-        <p className="ml-4 text-xl text-blue-400">PROCESSING...</p>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-cyan-400"></div>
+        <p className="ml-4 text-xl text-cyan-300 font-mono tracking-wider">PROCESSING...</p>
       </div>
     )}
     {error && (
-      <div className="bg-red-800 border border-red-600 text-red-200 px-5 py-4 rounded-lg relative mb-6 shadow-md text-center" role="alert">
-        <strong className="font-bold text-lg">SYSTEM ERROR DETECTED</strong>
+      <div className="glass-card border border-red-500/30 text-red-200 px-5 py-4 rounded-lg relative mb-6 shadow-2xl text-center neon-glow" role="alert">
+        <strong className="font-bold text-lg text-red-300">SYSTEM ERROR DETECTED</strong>
         <span className="block sm:inline ml-2">{error}</span>
       </div>
     )}
     {message && (
-      <div className={`px-5 py-4 rounded-lg relative mb-6 shadow-md text-center ${message.includes('SAVED') || message.includes('OVER') || message.includes('COMPLETED') ? 'bg-green-800 border border-green-600 text-green-200' : 'bg-yellow-800 border border-yellow-600 text-yellow-200'}`} role="alert">
+      <div className={`glass-card px-5 py-4 rounded-lg relative mb-6 shadow-2xl text-center border ${
+        message.includes('SAVED') || message.includes('OVER') || message.includes('COMPLETED')
+          ? 'border-green-500/30 text-green-200 neon-glow-green'
+          : 'border-yellow-500/30 text-yellow-200'
+      }`} role="alert">
         <span className="block sm:inline">{message}</span>
       </div>
     )}

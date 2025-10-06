@@ -210,27 +210,54 @@ const App = () => {
         onStartTimer={handleStartTimer}
         onResetTimer={handleResetTimer}
       />
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100 pt-16">
-        <main className="w-full max-w-3xl bg-zinc-800 p-6 sm:p-8 rounded-xl shadow-xl border border-zinc-700">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 grid-bg"></div>
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+
+        {/* Main Content Container */}
+        <main className="w-full max-w-4xl glass-card p-6 sm:p-8 rounded-2xl shadow-2xl border border-cyan-500/20 relative z-10 mt-16 backdrop-blur-xl">
+          {/* AI Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-3 mb-4">
+              <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
+              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="whitespace-nowrap">NEURAL</span>
+                <br className="sm:hidden" />
+                <span className="sm:ml-2 whitespace-nowrap">WORKOUT MATRIX</span>
+              </h1>
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+            </div>
+            <p className="text-cyan-300/80 text-sm font-mono tracking-wider">
+              AI-POWERED FITNESS OPTIMIZATION SYSTEM v2.0
+            </p>
+          </div>
+
           <MessageDisplay loading={loading} error={error} message={message} />
           {/* <div className="w-full mb-4">
             <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
           </div> */}
           <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} />
 
-          {/* Suggest Rest Time Section */}
-          <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
-            <h2 className="text-3xl font-bold mb-5 text-center text-lime-400">REST CALCULATOR</h2>
+          {/* Rest Calculator Section */}
+          <section className="mb-10 p-6 glass-card rounded-xl shadow-lg border border-cyan-500/20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-purple-400"></div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-5 text-center text-cyan-300 flex flex-col sm:flex-row items-center justify-center gap-2">
+              <i className="fas fa-brain text-cyan-400"></i>
+              <span className="whitespace-nowrap">RECOVERY</span>
+              <span className="whitespace-nowrap">CALCULATOR</span>
+            </h2>
             <textarea
-              className="w-full p-4 border border-lime-500 rounded-lg bg-zinc-950 text-lime-200 placeholder-lime-400 focus:ring-2 focus:ring-lime-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
+              className="w-full p-4 border border-cyan-500/30 rounded-lg bg-slate-900/50 text-cyan-100 placeholder-cyan-400/60 focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base backdrop-blur-sm"
               rows="3"
-              placeholder="Input session parameters for recovery optimization"
+              placeholder="Input physiological parameters for AI recovery optimization"
               value={restInput}
               onChange={e => setRestInput(e.target.value)}
               disabled={restLoading}
             ></textarea>
             <button
-              className="w-full bg-lime-400 hover:bg-lime-500 text-zinc-900 font-extrabold py-3.5 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-900 font-extrabold py-3.5 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide neon-glow"
               onClick={async () => {
                 setRestLoading(true);
                 setRestError("");
@@ -257,16 +284,16 @@ const App = () => {
             >
               {restLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-lime-700 mr-3"></div>
-                  CALCULATING...
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-700 mr-3"></div>
+                  PROCESSING...
                 </>
               ) : (
                 <>
-                  <i className="fas fa-bed mr-3 text-lime-700"></i> CALCULATE REST
+                  <i className="fas fa-cog mr-3 text-slate-700"></i> CALCULATE RECOVERY
                 </>
               )}
             </button>
-            {restError && <div className="text-lime-300 mt-2">{restError}</div>}
+            {restError && <div className="text-cyan-300 mt-2 font-mono">{restError}</div>}
           </section>
 
           <TodayWorkoutDisplay
