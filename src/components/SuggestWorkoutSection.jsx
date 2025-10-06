@@ -53,7 +53,11 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const getMuscleRatings = async () => {
     setRatingsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/muscle-ratings`);
+      // Get all muscle names from the grid
+      const allMuscles = ['Back', 'Chest', 'Traps', 'Triceps', 'Biceps', 'Legs', 'Core', 'Calves', 'Shoulders'];
+      const musclesParam = allMuscles.join(', ');
+      
+      const response = await fetch(`${API_BASE_URL}/muscle-ratings?muscles=${encodeURIComponent(musclesParam)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch muscle ratings');
       }
