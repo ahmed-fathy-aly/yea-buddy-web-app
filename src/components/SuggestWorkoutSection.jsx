@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MuscleSelectionGrid from './MuscleSelectionGrid';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
@@ -14,6 +15,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const [recoveryRatings, setRecoveryRatings] = useState(null);
   const [dryRun, setDryRun] = useState(true);
   const [progressFolded, setProgressFolded] = useState(true);
+  const [selectedMuscles, setSelectedMuscles] = useState([]);
 
   const openHistory = async () => {
     setShowHistory(true);
@@ -39,6 +41,14 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const [loading, setLoading] = useState(false);
   const [additionalInput, setAdditionalInput] = useState('');
 
+  const handleMuscleToggle = (muscle) => {
+    setSelectedMuscles(prev => 
+      prev.includes(muscle) 
+        ? prev.filter(m => m !== muscle)
+        : [...prev, muscle]
+    );
+  };
+
   const suggestNewWorkout = async () => {
     setLoading(true);
     setStreamingStatus([]);
@@ -47,7 +57,18 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
     setRecoveryRatings(null);
     setTodaysWorkout(null);
     try {
-      const url = `${API_BASE_URL}/suggest-workout?additional_input=${encodeURIComponent(additionalInput)}&dryRun=${dryRun}`;
+      // Build URL with both additional_input and specific_muscles parameters
+      const params = new URLSearchParams({
+        additional_input: additionalInput,
+        dryRun: dryRun.toString()
+      });
+      
+      // Add specific_muscles parameter if muscles are selected
+      if (selectedMuscles.length > 0) {
+        params.append('specific_muscles', selectedMuscles.join(', '));
+      }
+      
+      const url = `${API_BASE_URL}/suggest-workout?${params.toString()}`;
       const res = await fetch(url);
       if (!res.body) throw new Error('No response body');
       const reader = res.body.getReader();
@@ -91,6 +112,12 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   return (
     <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
       <h2 className="text-3xl font-bold mb-5 text-center text-blue-300">GET YOUR DAILY BEAST MODE ON!</h2>
+      
+      <MuscleSelectionGrid 
+        selectedMuscles={selectedMuscles}
+        onMuscleToggle={handleMuscleToggle}
+      />
+      
       <textarea
         className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-950 text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
         rows="4"
