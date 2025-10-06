@@ -152,36 +152,44 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
                 <div>
                   {exerciseGroups.length === 1 ? (
                     // If only one group, show exercises directly without tabs
-                    exerciseGroups[0].exercises.map((exercise, exIndex) => (
-                      <ExerciseBlock
-                        key={exercise.id || exIndex}
-                        exercise={exercise}
-                        exIndex={exIndex}
-                        handleSetChange={handleSetChange}
-                        setRefs={setRefs}
-                        refreshWorkout={refreshWorkout}
-                        onChooseExercise={handleChooseExercise}
-                        exerciseGroup={exerciseGroups[0].name}
-                        isChosen={chosenExercises[exerciseGroups[0].name] === exercise.id}
-                        hasMultipleInGroup={exerciseGroups[0].exercises.length > 1}
-                      />
-                    ))
+                    exerciseGroups[0].exercises.map((exercise) => {
+                      // Find the global index of this exercise in the original workout
+                      const globalExIndex = todayWorkout.exercises.findIndex(ex => ex.id === exercise.id);
+                      return (
+                        <ExerciseBlock
+                          key={exercise.id || globalExIndex}
+                          exercise={exercise}
+                          exIndex={globalExIndex}
+                          handleSetChange={handleSetChange}
+                          setRefs={setRefs}
+                          refreshWorkout={refreshWorkout}
+                          onChooseExercise={handleChooseExercise}
+                          exerciseGroup={exerciseGroups[0].name}
+                          isChosen={chosenExercises[exerciseGroups[0].name] === exercise.id}
+                          hasMultipleInGroup={exerciseGroups[0].exercises.length > 1}
+                        />
+                      );
+                    })
                   ) : (
                     // Multiple groups - show tabbed content
-                    exerciseGroups[activeTab]?.exercises.map((exercise, exIndex) => (
-                      <ExerciseBlock
-                        key={exercise.id || exIndex}
-                        exercise={exercise}
-                        exIndex={exIndex}
-                        handleSetChange={handleSetChange}
-                        setRefs={setRefs}
-                        refreshWorkout={refreshWorkout}
-                        onChooseExercise={handleChooseExercise}
-                        exerciseGroup={exerciseGroups[activeTab].name}
-                        isChosen={chosenExercises[exerciseGroups[activeTab].name] === exercise.id}
-                        hasMultipleInGroup={exerciseGroups[activeTab].exercises.length > 1}
-                      />
-                    ))
+                    exerciseGroups[activeTab]?.exercises.map((exercise) => {
+                      // Find the global index of this exercise in the original workout
+                      const globalExIndex = todayWorkout.exercises.findIndex(ex => ex.id === exercise.id);
+                      return (
+                        <ExerciseBlock
+                          key={exercise.id || globalExIndex}
+                          exercise={exercise}
+                          exIndex={globalExIndex}
+                          handleSetChange={handleSetChange}
+                          setRefs={setRefs}
+                          refreshWorkout={refreshWorkout}
+                          onChooseExercise={handleChooseExercise}
+                          exerciseGroup={exerciseGroups[activeTab].name}
+                          isChosen={chosenExercises[exerciseGroups[activeTab].name] === exercise.id}
+                          hasMultipleInGroup={exerciseGroups[activeTab].exercises.length > 1}
+                        />
+                      );
+                    })
                   )}
                 </div>
               )}

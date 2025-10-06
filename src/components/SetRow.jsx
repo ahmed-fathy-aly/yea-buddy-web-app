@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) => {
   const [reps, setReps] = useState(set.reps);
   const [weight, setWeight] = useState(set.weight);
   const [unit, setUnit] = useState(set.unit);
+  
+  // Sync local state with props when they change
+  useEffect(() => {
+    setReps(set.reps);
+    setWeight(set.weight);
+    setUnit(set.unit);
+  }, [set.reps, set.weight, set.unit]);
+  
   // Personal best detection
   const targetReps = exercise.target_reps;
   const targetWeight = exercise.target_weight;
@@ -73,7 +81,7 @@ const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) 
               step="1"
               min="0"
               className="w-16 p-2 mx-1 border border-zinc-600 rounded-md bg-zinc-950 text-white text-center text-base focus:ring-1 focus:ring-blue-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              value={set.reps}
+              value={reps || ''}
               onChange={(e) => handleRepsChange(parseInt(e.target.value) || 0)}
               aria-label={`Reps for ${exercise.name} Set ${setIndex + 1}`}
             />
@@ -95,7 +103,7 @@ const SetRow = ({ set, exIndex, setIndex, handleSetChange, exercise, setRefs }) 
             step="0.5"
             min="0"
             className="w-28 p-2 border border-zinc-600 rounded-md bg-zinc-950 text-white text-center text-base focus:ring-1 focus:ring-blue-500"
-            value={set.weight}
+            value={weight || ''}
             onChange={(e) => handleWeightChange(parseFloat(e.target.value) || 0)}
             aria-label={`Weight for ${exercise.name} Set ${setIndex + 1}`}
           />
