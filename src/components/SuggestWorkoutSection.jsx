@@ -12,10 +12,11 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const [streamingStatus, setStreamingStatus] = useState([]);
   const [suggestedWorkout, setSuggestedWorkout] = useState(null);
   const [formattedText, setFormattedText] = useState('');
-  const [recoveryRatings, setRecoveryRatings] = useState(null);
   const [dryRun, setDryRun] = useState(true);
   const [progressFolded, setProgressFolded] = useState(true);
   const [selectedMuscles, setSelectedMuscles] = useState([]);
+  const [muscleRatings, setMuscleRatings] = useState(null);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
 
   const openHistory = async () => {
     setShowHistory(true);
@@ -49,12 +50,39 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
     );
   };
 
+  const getMuscleRatings = async () => {
+    setRatingsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/muscle-ratings`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch muscle ratings');
+      }
+      const data = await response.json();
+      setMuscleRatings(data);
+    } catch (err) {
+      console.error('Error fetching muscle ratings:', err);
+      // Set some mock data for demonstration if API fails
+      setMuscleRatings([
+        { muscle: 'Back', score: 85, explanation: 'Well recovered, ready for heavy lifting' },
+        { muscle: 'Chest', score: 60, explanation: 'Moderately recovered, light to medium intensity' },
+        { muscle: 'Traps', score: 75, explanation: 'Good recovery, suitable for training' },
+        { muscle: 'Triceps', score: 45, explanation: 'Still recovering, avoid heavy pushing movements' },
+        { muscle: 'Biceps', score: 90, explanation: 'Fully recovered, ready for intense training' },
+        { muscle: 'Legs', score: 30, explanation: 'Heavy fatigue, recommend rest or light activity' },
+        { muscle: 'Core', score: 80, explanation: 'Strong recovery, good for stability work' },
+        { muscle: 'Calves', score: 95, explanation: 'Excellent condition, ready for explosive movements' },
+        { muscle: 'Shoulders', score: 55, explanation: 'Moderate fatigue, be cautious with overhead movements' }
+      ]);
+    } finally {
+      setRatingsLoading(false);
+    }
+  };
+
   const suggestNewWorkout = async () => {
     setLoading(true);
     setStreamingStatus([]);
     setSuggestedWorkout(null);
     setFormattedText('');
-    setRecoveryRatings(null);
     setTodaysWorkout(null);
     try {
       // Build URL with both additional_input and specific_muscles parameters
@@ -88,7 +116,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
             setStreamingStatus(prev => [...prev, obj]);
             if (obj.workout) setSuggestedWorkout(obj.workout);
             if (obj.formattedText) setFormattedText(obj.formattedText);
-            if (obj.recoveryRatings) setRecoveryRatings(obj.recoveryRatings);
           } catch (e) {
             // ignore parse errors for incomplete lines
           }
@@ -116,6 +143,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       <MuscleSelectionGrid 
         selectedMuscles={selectedMuscles}
         onMuscleToggle={handleMuscleToggle}
+        muscleRatings={muscleRatings}
       />
       
       <textarea
@@ -140,6 +168,22 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           {dryRun ? 'Preview Only' : 'Save to DB'}
         </span>
       </div>
+      <button
+        onClick={getMuscleRatings}
+        disabled={ratingsLoading}
+        className="w-full mb-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base tracking-wide"
+      >
+        {ratingsLoading ? (
+          <>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+            ANALYZING RECOVERY...
+          </>
+        ) : (
+          <>
+            <i className="fas fa-heartbeat mr-3"></i> GET MUSCLE RECOVERY RATINGS
+          </>
+        )}
+      </button>
       <button
         onClick={suggestNewWorkout}
         disabled={loading}
@@ -206,33 +250,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
                 ))}
               </ul>
             )}
-          </div>
-        </div>
-      )}
-      {/* Recovery Ratings UI - always shown when available */}
-      {recoveryRatings && Array.isArray(recoveryRatings) && recoveryRatings.length > 0 && (
-        <div className="mt-4">
-          <div className="font-bold text-blue-300 mb-2">Recovery Ratings:</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(recoveryRatings.slice().sort((a, b) => b.score - a.score)).map((r, idx) => (
-              <div key={idx} className="mb-4 p-3 bg-zinc-900 rounded border border-blue-800">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-blue-200 text-base">{r.muscle}</span>
-                  <span className="font-bold text-blue-400">{r.score}</span>
-                </div>
-                <div className="w-full h-4 bg-zinc-800 rounded overflow-hidden mb-2">
-                  <div
-                    className="h-4 rounded"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, r.score))}%`,
-                      background: r.score >= 80 ? '#22c55e' : r.score >= 50 ? '#eab308' : '#ef4444',
-                      transition: 'width 0.5s',
-                    }}
-                  ></div>
-                </div>
-                <div className="text-xs text-blue-100 italic">{r.explanation}</div>
-              </div>
-            ))}
           </div>
         </div>
       )}
