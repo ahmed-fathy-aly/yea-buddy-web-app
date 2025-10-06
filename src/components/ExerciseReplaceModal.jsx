@@ -50,7 +50,7 @@ const ExerciseReplaceModal = ({ exerciseId, open, onClose, onReplace }) => {
         <textarea
           className="w-full p-3 border border-zinc-700 rounded-md bg-zinc-900 text-white placeholder-zinc-500 focus:ring-1 focus:ring-blue-500 transition duration-300 ease-in-out resize-y mb-4"
           rows="3"
-          placeholder="Describe what you want to replace this exercise with..."
+          placeholder="Input replacement specifications and optimization criteria"
           value={userInput}
           onChange={e => setUserInput(e.target.value)}
         ></textarea>
@@ -75,7 +75,7 @@ const ExerciseReplaceModal = ({ exerciseId, open, onClose, onReplace }) => {
         )}
         {replacement && (
           <div className="bg-zinc-700 p-4 rounded-md border border-zinc-600 whitespace-pre-wrap text-zinc-200 text-sm leading-relaxed mt-4">
-            <div className="mb-2 font-bold text-green-300">Exercise replaced successfully!</div>
+            <div className="mb-2 font-bold text-green-300">Exercise replacement protocol executed successfully</div>
             <div><span className="font-semibold">Name:</span> {replacement.name}</div>
             <div><span className="font-semibold">Target Muscles:</span> {replacement.target_muscles}</div>
             <div><span className="font-semibold">Machine:</span> {replacement.machine}</div>
@@ -87,7 +87,7 @@ const ExerciseReplaceModal = ({ exerciseId, open, onClose, onReplace }) => {
             onClick={onClose}
             className="bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out"
           >
-            CLOSE
+            TERMINATE
           </button>
         </div>
       </div>

@@ -99,7 +99,7 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
       {selectedMuscles.length > 0 && (
         <div className="mt-4 p-3 bg-zinc-800 rounded-lg border border-blue-500">
           <div className="text-center">
-            <span className="text-blue-400 font-bold">Selected: </span>
+            <span className="text-blue-400 font-bold">Active Selections: </span>
             <span className="text-white">
               {selectedMuscles.join(', ')}
             </span>

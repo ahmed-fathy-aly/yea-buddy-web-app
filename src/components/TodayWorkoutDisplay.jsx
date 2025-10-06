@@ -109,7 +109,7 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
   return (
     <section>
       <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-center text-blue-300">
-        <i className="fas fa-calendar-alt mr-2 text-blue-400"></i>TODAY'S <span className="text-blue-500">MASSIVE WORKOUT!</span>
+        <i className="fas fa-calendar-alt mr-2 text-blue-400"></i>DAILY <span className="text-blue-500">OPTIMIZATION PROTOCOL</span>
       </h2>
       {todayWorkout ? (
         <div className="border border-blue-700 p-6 rounded-xl bg-zinc-900 shadow-xl">
@@ -117,7 +117,7 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
           {todayWorkout.subtitle && <p className="text-zinc-300 italic mb-4 text-base">{todayWorkout.subtitle}</p>}
           {todayWorkout.ai_tips && (
             <div className="bg-blue-900 border-l-4 border-blue-500 text-blue-200 p-4 rounded-md mb-6 shadow-sm text-sm sm:text-base">
-              <p className="font-bold mb-1">🧠 AI INSIGHTS, YEAH BUDDY!</p>
+              <p className="font-bold mb-1">� NEURAL ANALYSIS COMPLETE</p>
               <p>{todayWorkout.ai_tips}</p>
             </div>
           )}

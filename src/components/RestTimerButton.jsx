@@ -154,7 +154,7 @@ const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
             onClick={handleToggle}
             type="button"
           >
-            <span className="block leading-tight text-lg font-bold">{timerRunning ? 'RESTING' : 'REST'}</span>
+            <span className="block leading-tight text-lg font-bold">{timerRunning ? 'RECOVERY' : 'REST'}</span>
             <span className="text-sm font-mono mt-1">
               {minutes}:{seconds.toString().padStart(2, '0')}
             </span>

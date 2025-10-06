@@ -5,12 +5,12 @@ const MessageDisplay = ({ loading, error, message }) => (
     {loading && (
       <div className="flex items-center justify-center p-4 my-4">
         <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
-        <p className="ml-4 text-xl text-blue-400">LOADING THOSE GAINS!</p>
+        <p className="ml-4 text-xl text-blue-400">PROCESSING...</p>
       </div>
     )}
     {error && (
       <div className="bg-red-800 border border-red-600 text-red-200 px-5 py-4 rounded-lg relative mb-6 shadow-md text-center" role="alert">
-        <strong className="font-bold text-lg">FAILURE!</strong>
+        <strong className="font-bold text-lg">SYSTEM ERROR DETECTED</strong>
         <span className="block sm:inline ml-2">{error}</span>
       </div>
     )}

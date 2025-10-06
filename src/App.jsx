@@ -220,11 +220,11 @@ const App = () => {
 
           {/* Suggest Rest Time Section */}
           <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
-            <h2 className="text-3xl font-bold mb-5 text-center text-lime-400">SUGGEST REST TIME</h2>
+            <h2 className="text-3xl font-bold mb-5 text-center text-lime-400">REST CALCULATOR</h2>
             <textarea
               className="w-full p-4 border border-lime-500 rounded-lg bg-zinc-950 text-lime-200 placeholder-lime-400 focus:ring-2 focus:ring-lime-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
               rows="3"
-              placeholder="Describe your workout or needs for rest... (e.g. 'Heavy legs day', 'Supersets', etc.)"
+              placeholder="Input session parameters for recovery optimization"
               value={restInput}
               onChange={e => setRestInput(e.target.value)}
               disabled={restLoading}
@@ -258,11 +258,11 @@ const App = () => {
               {restLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-lime-700 mr-3"></div>
-                  SUGGESTING REST...
+                  CALCULATING...
                 </>
               ) : (
                 <>
-                  <i className="fas fa-bed mr-3 text-lime-700"></i> SUGGEST REST TIME
+                  <i className="fas fa-bed mr-3 text-lime-700"></i> CALCULATE REST
                 </>
               )}
             </button>

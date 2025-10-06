@@ -142,7 +142,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
 
   return (
     <section className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-lg border border-zinc-800">
-      <h2 className="text-3xl font-bold mb-5 text-center text-blue-300">GET YOUR DAILY BEAST MODE ON!</h2>
+      <h2 className="text-3xl font-bold mb-5 text-center text-blue-300">DAILY PROTOCOL GENERATOR</h2>
       
       <MuscleSelectionGrid 
         selectedMuscles={selectedMuscles}
@@ -153,7 +153,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       <textarea
         className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-950 text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base"
         rows="4"
-        placeholder="YEAH BUDDY! Tell me what you want: 'LIGHT WEIGHT! UPPER BODY! NO SLEEP!' Or leave it blank for a surprise!"
+        placeholder="Neural input: Specify parameters or leave blank for automated protocol"
         value={additionalInput}
         onChange={(e) => setAdditionalInput(e.target.value)}
       ></textarea>
@@ -169,7 +169,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           />
         </button>
         <span className={`ml-3 text-sm font-medium ${dryRun ? 'text-blue-400' : 'text-zinc-400'}`}>
-          {dryRun ? 'Preview Only' : 'Save to DB'}
+          {dryRun ? 'Simulation Mode' : 'Execute Protocol'}
         </span>
       </div>
       <button
@@ -184,7 +184,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           </>
         ) : (
           <>
-            <i className="fas fa-heartbeat mr-3"></i> GET MUSCLE RECOVERY RATINGS
+            <i className="fas fa-heartbeat mr-3"></i> RECOVERY ANALYSIS
           </>
         )}
       </button>
@@ -196,11 +196,11 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
         {loading ? (
           <>
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-            GENERATING MASS...
+            GENERATING PROTOCOL...
           </>
         ) : (
           <>
-            <i className="fas fa-magic mr-3"></i> GET NEW WORKOUT PLAN, LIGHT WEIGHT!
+            <i className="fas fa-magic mr-3"></i> GENERATE PROTOCOL
           </>
         )}
       </button>
