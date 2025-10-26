@@ -4,6 +4,7 @@ const CIRCLE_SIZE = 96;
 const STROKE_WIDTH = 8;
 const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const STORAGE_KEY = 'restTimerStartTime';
 
 function getProgressColor(progress) {
   // progress: 1 = full, 0 = empty
@@ -18,53 +19,119 @@ function getProgressColor(progress) {
   }
 }
 
-const RestTimerButton = ({ onRestOver, restDuration = 120 }) => {
+const RestTimerButton = ({ onRestOver, restDuration = 120, autoStartTrigger }) => {
   const [restTime, setRestTime] = useState(restDuration);
   const [timerRunning, setTimerRunning] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const intervalRef = useRef(null);
   const overlayTimeoutRef = useRef(null);
+  const autoStartTimeoutRef = useRef(null);
 
+  // Initialize timer from localStorage if active
   useEffect(() => {
-    setRestTime(restDuration);
+    const startTimeStr = localStorage.getItem(STORAGE_KEY);
+    if (startTimeStr) {
+      const startTime = parseInt(startTimeStr, 10);
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      
+      if (elapsed < restDuration) {
+        // Timer still running
+        setRestTime(restDuration - elapsed);
+        setTimerRunning(true);
+      } else {
+        // Timer already finished
+        localStorage.removeItem(STORAGE_KEY);
+        setRestTime(restDuration);
+        setTimerRunning(false);
+      }
+    }
   }, [restDuration]);
 
+  // Update timer based on start time
   useEffect(() => {
-    if (timerRunning && restTime > 0) {
+    if (timerRunning) {
       intervalRef.current = setInterval(() => {
-        setRestTime((prev) => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current);
-            setTimerRunning(false);
-            setShowOverlay(true);
-            overlayTimeoutRef.current = setTimeout(() => {
-              setShowOverlay(false);
-              if (onRestOver) onRestOver();
-            }, 2000);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (!timerRunning || restTime === 0) {
+        const startTimeStr = localStorage.getItem(STORAGE_KEY);
+        if (!startTimeStr) {
+          setTimerRunning(false);
+          setRestTime(restDuration);
+          return;
+        }
+
+        const startTime = parseInt(startTimeStr, 10);
+        const now = Date.now();
+        const elapsed = Math.floor((now - startTime) / 1000);
+        const remaining = restDuration - elapsed;
+
+        if (remaining <= 0) {
+          clearInterval(intervalRef.current);
+          setTimerRunning(false);
+          setRestTime(0);
+          localStorage.removeItem(STORAGE_KEY);
+          setShowOverlay(true);
+          overlayTimeoutRef.current = setTimeout(() => {
+            setShowOverlay(false);
+            setRestTime(restDuration);
+            if (onRestOver) onRestOver();
+          }, 2000);
+        } else {
+          setRestTime(remaining);
+        }
+      }, 100); // Check every 100ms for smoother updates
+    } else {
       clearInterval(intervalRef.current);
     }
+    
     return () => clearInterval(intervalRef.current);
-  }, [timerRunning, restTime, onRestOver]);
+  }, [timerRunning, restDuration, onRestOver]);
 
   useEffect(() => {
     return () => {
       if (overlayTimeoutRef.current) clearTimeout(overlayTimeoutRef.current);
+      if (autoStartTimeoutRef.current) clearTimeout(autoStartTimeoutRef.current);
     };
   }, []);
 
+  const startTimer = () => {
+    const startTime = Date.now();
+    localStorage.setItem(STORAGE_KEY, startTime.toString());
+    setRestTime(restDuration);
+    setTimerRunning(true);
+    setShowOverlay(false);
+  };
+
+  // Auto-start timer when autoStartTrigger changes (debounced)
+  useEffect(() => {
+    if (autoStartTrigger > 0) {
+      // Clear any existing timeout
+      if (autoStartTimeoutRef.current) {
+        clearTimeout(autoStartTimeoutRef.current);
+      }
+      
+      // Debounce: wait 500ms after last change before starting timer
+      autoStartTimeoutRef.current = setTimeout(() => {
+        startTimer();
+      }, 500);
+    }
+    
+    return () => {
+      if (autoStartTimeoutRef.current) {
+        clearTimeout(autoStartTimeoutRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStartTrigger]);
+
   const handleToggle = () => {
     if (timerRunning) {
+      // Stop and reset
+      localStorage.removeItem(STORAGE_KEY);
       setRestTime(restDuration);
       setTimerRunning(false);
     } else {
-      if (restTime === 0) setRestTime(restDuration);
-      setTimerRunning(true);
+      // Start timer
+      startTimer();
     }
   };
 

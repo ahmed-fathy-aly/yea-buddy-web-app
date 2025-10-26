@@ -4,22 +4,17 @@ import RestTimerButton from './components/RestTimerButton';
 import SuggestWorkoutSection from './components/SuggestWorkoutSection';
 import TodayWorkoutDisplay from './components/TodayWorkoutDisplay';
 import WorkoutFooter from './components/WorkoutFooter';
-import WorkoutProgressBar from './components/WorkoutProgressBar';
-import ExerciseReplaceModal from './components/ExerciseReplaceModal';
+import MuscleVolumeTracker from './components/MuscleVolumeTracker';
 
 const App = () => {
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
-  const [timer, setTimer] = useState(0);
-  const [timerRunning, setTimerRunning] = useState(false);
   const [restDuration, setRestDuration] = useState(120);
-  const [restInput, setRestInput] = useState("");
-  const [restLoading, setRestLoading] = useState(false);
-  const [restError, setRestError] = useState("");
+  const [autoStartTimerTrigger, setAutoStartTimerTrigger] = useState(0);
+  const [selectedMuscles, setSelectedMuscles] = useState([]);
   const saveTimerRef = useRef(null);
-  const timerIntervalRef = useRef(null);
   const setRefs = useRef({});
 
   const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
@@ -95,6 +90,12 @@ const App = () => {
       if (!prevWorkout) return prevWorkout;
       const updatedWorkout = JSON.parse(JSON.stringify(prevWorkout));
       updatedWorkout.exercises[exIndex].sets[setIndex][field] = value;
+      
+      // Auto-start rest timer when reps are entered (and value > 0)
+      if (field === 'reps' && value && value > 0) {
+        setAutoStartTimerTrigger(prev => prev + 1);
+      }
+      
       saveTimerRef.current = setTimeout(() => {
         saveWorkoutChanges(updatedWorkout);
       }, 500);
@@ -106,6 +107,24 @@ const App = () => {
   useEffect(() => {
     fetchTodayWorkout();
   }, [fetchTodayWorkout]);
+
+  // Handle muscle filter toggle
+  const handleMuscleToggle = useCallback((muscle) => {
+    if (muscle === null) {
+      // Clear all filters
+      setSelectedMuscles([]);
+    } else {
+      setSelectedMuscles(prev => {
+        if (prev.includes(muscle)) {
+          // Remove muscle from selection
+          return prev.filter(m => m !== muscle);
+        } else {
+          // Add muscle to selection
+          return [...prev, muscle];
+        }
+      });
+    }
+  }, []);
 
   // Function to scroll to the first empty set
   const scrollToFirstEmptySet = useCallback(() => {
@@ -129,87 +148,10 @@ const App = () => {
     }
   }, [todayWorkout]);
 
-  // Calculate completed/total sets using group-based logic
-  const calculateGroupBasedProgress = (workout, chosenExercises = {}) => {
-    if (!workout || !workout.exercises || workout.exercises.length === 0) {
-      return { completedSets: 0, totalSets: 0 };
-    }
 
-    let total = 0;
-    let completed = 0;
-    
-    // Group all exercises
-    const allGroups = {};
-    workout.exercises.forEach(exercise => {
-      const groupName = exercise.exercise_group || 'Ungrouped';
-      if (!allGroups[groupName]) {
-        allGroups[groupName] = [];
-      }
-      allGroups[groupName].push(exercise);
-    });
-
-    // Calculate progress for each group
-    Object.entries(allGroups).forEach(([groupName, exercises]) => {
-      const chosenExerciseId = chosenExercises[groupName];
-      let exerciseToCount;
-
-      if (chosenExerciseId) {
-        // If an exercise is chosen, use that one
-        exerciseToCount = exercises.find(ex => ex.id === chosenExerciseId);
-      } else {
-        // If no exercise is chosen, use the one with the maximum number of sets
-        exerciseToCount = exercises.reduce((maxEx, currentEx) => {
-          const maxSets = maxEx?.sets?.length || 0;
-          const currentSets = currentEx?.sets?.length || 0;
-          return currentSets > maxSets ? currentEx : maxEx;
-        }, exercises[0]);
-      }
-
-      // Count sets from the selected exercise for this group
-      if (exerciseToCount && exerciseToCount.sets) {
-        total += exerciseToCount.sets.length;
-        completed += exerciseToCount.sets.filter(set => set.reps > 0).length;
-      }
-    });
-
-    return { completedSets: completed, totalSets: total };
-  };
-
-  const { completedSets, totalSets } = calculateGroupBasedProgress(todayWorkout);
-
-  // Timer logic
-  useEffect(() => {
-    if (timerRunning) {
-      timerIntervalRef.current = setInterval(() => {
-        setTimer((t) => t + 1);
-      }, 1000);
-    } else if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    return () => {
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    };
-  }, [timerRunning]);
-
-  const handleStartTimer = () => {
-    if (!timerRunning) setTimerRunning(true);
-  };
-
-  const handleResetTimer = () => {
-    setTimerRunning(false);
-    setTimer(0);
-  };
 
   return (
     <>
-      <WorkoutProgressBar
-        completedSets={completedSets}
-        totalSets={totalSets}
-        timer={timer}
-        timerRunning={timerRunning}
-        onStartTimer={handleStartTimer}
-        onResetTimer={handleResetTimer}
-      />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center p-4 sm:p-6 font-sans text-gray-100 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 grid-bg"></div>
@@ -217,7 +159,7 @@ const App = () => {
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
 
         {/* Main Content Container */}
-        <main className="w-full max-w-4xl glass-card p-6 sm:p-8 rounded-2xl shadow-2xl border border-cyan-500/20 relative z-10 mt-16 backdrop-blur-xl">
+        <main className="w-full max-w-4xl glass-card p-6 sm:p-8 rounded-2xl shadow-2xl border border-cyan-500/20 relative z-10 backdrop-blur-xl">
           {/* AI Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center space-x-3 mb-4">
@@ -235,66 +177,17 @@ const App = () => {
           </div>
 
           <MessageDisplay loading={loading} error={error} message={message} />
-          {/* <div className="w-full mb-4">
-            <GymTimer key={JSON.stringify(todayWorkout)} todayWorkout={todayWorkout} />
-          </div> */}
+          
           <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} />
 
-          {/* Rest Calculator Section */}
-          <section className="mb-10 p-6 glass-card rounded-xl shadow-lg border border-cyan-500/20 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-purple-400"></div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-5 text-center text-cyan-300 flex flex-col sm:flex-row items-center justify-center gap-2">
-              <i className="fas fa-brain text-cyan-400"></i>
-              <span className="whitespace-nowrap">RECOVERY</span>
-              <span className="whitespace-nowrap">CALCULATOR</span>
-            </h2>
-            <textarea
-              className="w-full p-4 border border-cyan-500/30 rounded-lg bg-slate-900/50 text-cyan-100 placeholder-cyan-400/60 focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base backdrop-blur-sm"
-              rows="3"
-              placeholder="Input physiological parameters for AI recovery optimization"
-              value={restInput}
-              onChange={e => setRestInput(e.target.value)}
-              disabled={restLoading}
-            ></textarea>
-            <button
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-900 font-extrabold py-3.5 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg tracking-wide neon-glow"
-              onClick={async () => {
-                setRestLoading(true);
-                setRestError("");
-                try {
-                  const res = await fetch("https://yea-buddy-be.onrender.com/suggest-rest-time", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user_input: restInput })
-                  });
-                  if (!res.ok) throw new Error("Failed to get rest time");
-                  const data = await res.json();
-                  if (typeof data.rest_time_seconds === "number") {
-                    setRestDuration(data.rest_time_seconds);
-                  } else {
-                    setRestError("No rest time returned");
-                  }
-                } catch (err) {
-                  setRestError("Error: " + err.message);
-                } finally {
-                  setRestLoading(false);
-                }
-              }}
-              disabled={restLoading || !restInput.trim()}
-            >
-              {restLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-700 mr-3"></div>
-                  PROCESSING...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-cog mr-3 text-slate-700"></i> CALCULATE RECOVERY
-                </>
-              )}
-            </button>
-            {restError && <div className="text-cyan-300 mt-2 font-mono">{restError}</div>}
-          </section>
+          {/* Muscle Volume Tracker */}
+          {todayWorkout && (
+            <MuscleVolumeTracker 
+              workout={todayWorkout} 
+              selectedMuscles={selectedMuscles}
+              onMuscleToggle={handleMuscleToggle}
+            />
+          )}
 
           <TodayWorkoutDisplay
             todayWorkout={todayWorkout}
@@ -303,16 +196,15 @@ const App = () => {
             handleSetChange={handleSetChange}
             setRefs={setRefs}
             refreshWorkout={fetchTodayWorkout}
+            selectedMuscles={selectedMuscles}
           />
         </main>
         <WorkoutFooter />
       </div>
       <RestTimerButton
         onRestOver={scrollToFirstEmptySet}
-        timer={timer}
-        timerRunning={timerRunning}
-        onToggleTimer={() => setTimerRunning((r) => !r)}
         restDuration={restDuration}
+        autoStartTrigger={autoStartTimerTrigger}
       />
     </>
   );

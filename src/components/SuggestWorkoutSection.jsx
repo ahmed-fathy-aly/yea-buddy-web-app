@@ -4,19 +4,19 @@ import MuscleSelectionGrid from './MuscleSelectionGrid';
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
 const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
-  const [todaysWorkout, setTodaysWorkout] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [workoutHistory, setWorkoutHistory] = useState([]);
   const [historyError, setHistoryError] = useState(null);
   const [streamingStatus, setStreamingStatus] = useState([]);
-  const [suggestedWorkout, setSuggestedWorkout] = useState(null);
-  const [formattedText, setFormattedText] = useState('');
-  const [dryRun, setDryRun] = useState(true);
   const [progressFolded, setProgressFolded] = useState(true);
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   const [muscleRatings, setMuscleRatings] = useState(null);
   const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [additionalInput, setAdditionalInput] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState(60);
+  const [formCollapsed, setFormCollapsed] = useState(true);
 
   const openHistory = async () => {
     setShowHistory(true);
@@ -39,8 +39,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
     setWorkoutHistory([]);
     setHistoryError(null);
   };
-  const [loading, setLoading] = useState(false);
-  const [additionalInput, setAdditionalInput] = useState('');
 
   const handleMuscleToggle = (muscle) => {
     setSelectedMuscles(prev => 
@@ -53,7 +51,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const getMuscleRatings = async () => {
     setRatingsLoading(true);
     try {
-      // Get all muscle names from the grid
       const allMuscles = ['Back', 'Chest', 'Traps', 'Triceps', 'Biceps', 'Legs', 'Core', 'Calves', 'Shoulders'];
       const musclesParam = allMuscles.join(', ');
       
@@ -65,7 +62,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
       setMuscleRatings(data);
     } catch (err) {
       console.error('Error fetching muscle ratings:', err);
-      // Set some mock data for demonstration if API fails
       setMuscleRatings([
         { muscle: 'Back', score: 85, explanation: 'Well recovered, ready for heavy lifting' },
         { muscle: 'Chest', score: 60, explanation: 'Moderately recovered, light to medium intensity' },
@@ -85,14 +81,11 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
   const suggestNewWorkout = async () => {
     setLoading(true);
     setStreamingStatus([]);
-    setSuggestedWorkout(null);
-    setFormattedText('');
-    setTodaysWorkout(null);
     try {
-      // Build URL with both additional_input and specific_muscles parameters
+      // Build URL with parameters
       const params = new URLSearchParams({
         additional_input: additionalInput,
-        dryRun: dryRun.toString()
+        duration_minutes: durationMinutes.toString()
       });
       
       // Add specific_muscles parameter if muscles are selected
@@ -118,20 +111,14 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           try {
             const obj = JSON.parse(line);
             setStreamingStatus(prev => [...prev, obj]);
-            if (obj.workout) setSuggestedWorkout(obj.workout);
-            if (obj.formattedText) setFormattedText(obj.formattedText);
           } catch (e) {
             // ignore parse errors for incomplete lines
           }
         }
       }
       setAdditionalInput('');
-      // Fetch today's workouts after streaming is done
-      const todayRes = await fetch(`${API_BASE_URL}/workouts/today`);
-      if (todayRes.ok) {
-        const todayData = await todayRes.json();
-        setTodaysWorkout(todayData);
-      }
+      
+      // Refresh the workout display
       if (onWorkoutSuggested) onWorkoutSuggested();
     } catch (err) {
       setStreamingStatus(prev => [...prev, { status: 'Error', error: err.message }]);
@@ -160,50 +147,84 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
         </div>
       </h2>
       
-      <MuscleSelectionGrid 
-        selectedMuscles={selectedMuscles}
-        onMuscleToggle={handleMuscleToggle}
-        muscleRatings={muscleRatings}
-      />
-      
-      <textarea
-        className="w-full p-4 border border-cyan-500/30 rounded-lg bg-slate-900/50 text-cyan-100 placeholder-cyan-400/60 focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base backdrop-blur-sm relative z-10"
-        rows="4"
-        placeholder="Neural input: Specify parameters or leave blank for automated protocol"
-        value={additionalInput}
-        onChange={(e) => setAdditionalInput(e.target.value)}
-      ></textarea>
-      <div className="flex items-center mb-4 relative z-10">
-        <span className="text-cyan-200 font-semibold text-base mr-3">Dry Run:</span>
+      <div className="mb-4 flex justify-center relative z-10">
         <button
-          type="button"
-          onClick={() => setDryRun(!dryRun)}
-          className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${dryRun ? 'bg-cyan-600' : 'bg-slate-700'}`}
+          onClick={() => setFormCollapsed(!formCollapsed)}
+          className="text-cyan-300 hover:text-cyan-200 font-semibold text-sm px-4 py-2 rounded-lg border border-cyan-500/30 hover:border-cyan-500/50 transition-all bg-slate-900/30 hover:bg-slate-900/50 flex items-center gap-2"
         >
-          <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-300 ${dryRun ? 'translate-x-6' : 'translate-x-1'}`}
-          />
+          {formCollapsed ? (
+            <>
+              <span>Show Options</span>
+              <i className="fas fa-chevron-down"></i>
+            </>
+          ) : (
+            <>
+              <span>Hide Options</span>
+              <i className="fas fa-chevron-up"></i>
+            </>
+          )}
         </button>
-        <span className={`ml-3 text-sm font-medium ${dryRun ? 'text-cyan-400' : 'text-cyan-400/60'}`}>
-          {dryRun ? 'Simulation Mode' : 'Execute Protocol'}
-        </span>
       </div>
-      <button
-        onClick={getMuscleRatings}
-        disabled={ratingsLoading}
-        className="w-full mb-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base tracking-wide neon-glow relative z-10"
-      >
-        {ratingsLoading ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-            ANALYZING RECOVERY...
-          </>
-        ) : (
-          <>
-            <i className="fas fa-heartbeat mr-3"></i> RECOVERY ANALYSIS
-          </>
-        )}
-      </button>
+
+      {!formCollapsed && (
+        <>
+          <MuscleSelectionGrid 
+            selectedMuscles={selectedMuscles}
+            onMuscleToggle={handleMuscleToggle}
+            muscleRatings={muscleRatings}
+          />
+          
+          <textarea
+            className="w-full p-4 border border-cyan-500/30 rounded-lg bg-slate-900/50 text-cyan-100 placeholder-cyan-400/60 focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition duration-300 ease-in-out resize-y mb-5 text-base backdrop-blur-sm relative z-10"
+            rows="4"
+            placeholder="Neural input: Specify parameters or leave blank for automated protocol"
+            value={additionalInput}
+            onChange={(e) => setAdditionalInput(e.target.value)}
+          ></textarea>
+          
+          <div className="flex items-center justify-center gap-4 mb-4 relative z-10">
+            <span className="text-cyan-200 font-semibold text-base">Workout Duration:</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setDurationMinutes(prev => Math.max(15, prev - 5))}
+                className="w-10 h-10 bg-cyan-600/50 hover:bg-cyan-500/50 text-cyan-100 font-bold rounded-lg transition-all duration-300 flex items-center justify-center border border-cyan-500/30"
+                aria-label="Decrease duration by 5 minutes"
+              >
+                <i className="fas fa-minus"></i>
+              </button>
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-cyan-500/30 rounded-lg">
+                <span className="text-cyan-100 font-bold text-lg">{durationMinutes}</span>
+                <span className="text-cyan-300 text-sm">min</span>
+              </div>
+              <button
+                onClick={() => setDurationMinutes(prev => Math.min(180, prev + 5))}
+                className="w-10 h-10 bg-cyan-600/50 hover:bg-cyan-500/50 text-cyan-100 font-bold rounded-lg transition-all duration-300 flex items-center justify-center border border-cyan-500/30"
+                aria-label="Increase duration by 5 minutes"
+              >
+                <i className="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+          
+          <button
+            onClick={getMuscleRatings}
+            disabled={ratingsLoading}
+            className="w-full mb-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base tracking-wide neon-glow relative z-10"
+          >
+            {ratingsLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                ANALYZING RECOVERY...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-heartbeat mr-3"></i> RECOVERY ANALYSIS
+              </>
+            )}
+          </button>
+        </>
+      )}
+      
       <button
         onClick={suggestNewWorkout}
         disabled={loading}
@@ -242,17 +263,17 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
             </button>
           </div>
           <div className="relative">
-            <div className="absolute right-2 top-2">
-              {/* AI-like animation */}
-              <span className="inline-block w-6 h-6">
-                <span className="block w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0s'}}></span>
-                <span className="block w-2 h-2 bg-blue-300 rounded-full animate-bounce" style={{animationDelay: '0.2s', marginTop: '2px'}}></span>
-                <span className="block w-2 h-2 bg-blue-200 rounded-full animate-bounce" style={{animationDelay: '0.4s', marginTop: '2px'}}></span>
-              </span>
-            </div>
             {progressFolded ? (
-              <div className="text-blue-200 text-sm py-2">
-                {streamingStatus[streamingStatus.length-1]?.status || streamingStatus[streamingStatus.length-1]?.error}
+              <div className="text-blue-200 text-sm py-2 flex items-center justify-between pr-10">
+                <span>{streamingStatus[streamingStatus.length-1]?.status || streamingStatus[streamingStatus.length-1]?.error}</span>
+                <div className="absolute right-2 top-2">
+                  {/* AI-like animation */}
+                  <span className="inline-flex gap-1">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0s'}}></span>
+                    <span className="w-2 h-2 bg-blue-300 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
+                    <span className="w-2 h-2 bg-blue-200 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
+                  </span>
+                </div>
                 {streamingStatus[streamingStatus.length-1]?.nextStep === 'Done' && (
                   <span className="ml-2 text-green-400 font-bold">Done <i className="fas fa-check-circle"></i></span>
                 )}
@@ -272,43 +293,7 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
           </div>
         </div>
       )}
-      {suggestedWorkout && (
-        <div className="mb-6 mt-4 p-5 glass-card border border-cyan-500/30 rounded-xl shadow-2xl relative z-10">
-          <div className="flex items-center mb-2">
-            <span className="font-bold text-cyan-300 text-lg mr-2">Suggested Workout</span>
-            <span className="text-cyan-400"><i className="fas fa-dumbbell"></i></span>
-          </div>
-          <div className="text-white font-bold text-xl mb-1">{suggestedWorkout.title || 'Workout'}</div>
-          <div className="text-blue-200 mb-3 italic">{suggestedWorkout.subtitle}</div>
-          {suggestedWorkout.exercises && (
-            <ul className="list-none ml-0">
-              {suggestedWorkout.exercises.map((ex, i) => (
-                <li key={i} className="mb-4 p-3 bg-zinc-900 rounded-lg border border-blue-800 shadow">
-                  <div className="flex items-center mb-1">
-                    <span className="font-bold text-blue-200 text-base mr-2">{ex.name}</span>
-                    <span className="text-xs text-blue-400">({ex.target_muscles})</span>
-                    {ex.machine && <span className="ml-2 text-xs text-zinc-400">{ex.machine}</span>}
-                  </div>
-                  {ex.sets && (
-                    <ul className="ml-2 text-blue-300 text-sm">
-                      {ex.sets.map((set, j) => (
-                        <li key={j} className="flex items-center mb-1">
-                          <span className="font-bold">Set {j+1}:</span>
-                          <span className="ml-2">{set.weight} {set.unit} x {set.reps}</span>
-                          {set.ai_tips && (<span className="ml-2 text-yellow-300 italic">{set.ai_tips}</span>)}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {suggestedWorkout.ai_tips && (
-            <div className="mt-2 text-blue-300 italic">{suggestedWorkout.ai_tips}</div>
-          )}
-        </div>
-      )}
+      
       {showHistory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="glass-card p-8 rounded-2xl shadow-2xl max-w-lg w-full relative border border-cyan-500/20">
