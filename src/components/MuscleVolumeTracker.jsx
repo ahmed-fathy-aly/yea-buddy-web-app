@@ -2,32 +2,40 @@ import React, { useMemo } from 'react';
 
 const MuscleVolumeTracker = ({ workout, selectedMuscles, onMuscleToggle }) => {
   const muscleProgress = useMemo(() => {
-    if (!workout || !workout.muscle_volume_targets) {
+    if (!workout) {
       return [];
     }
 
-    const targets = workout.muscle_volume_targets;
+    // Use muscle_points_targets or recommended_points as fallback
+    const targets = workout.muscle_points_targets || workout.recommended_points || {};
+    if (Object.keys(targets).length === 0) {
+      return [];
+    }
+    
     const progress = [];
 
     Object.keys(targets).forEach(muscle => {
-      const targetSets = targets[muscle];
-      let completedSets = 0;
+      const targetPoints = targets[muscle];
+      let completedPoints = 0;
 
-      // Count completed sets for this muscle across all exercises
+      // Sum points for this muscle across all exercises and all completed sets
       if (workout.exercises) {
         workout.exercises.forEach(exercise => {
-          if (exercise.category === muscle && exercise.sets) {
-            completedSets += exercise.sets.filter(set => set.reps > 0).length;
+          if (exercise.muscle_points && exercise.sets) {
+            // For each completed set, add the muscle_points for this muscle
+            const points = exercise.muscle_points[muscle] || 0;
+            const completedSets = exercise.sets.filter(set => set.reps > 0).length;
+            completedPoints += points * completedSets;
           }
         });
       }
 
-      const percentage = targetSets > 0 ? Math.round((completedSets / targetSets) * 100) : 0;
+      const percentage = targetPoints > 0 ? Math.round((completedPoints / targetPoints) * 100) : 0;
       
       progress.push({
         muscle,
-        completed: completedSets,
-        target: targetSets,
+        completed: completedPoints,
+        target: targetPoints,
         percentage
       });
     });
@@ -51,7 +59,7 @@ const MuscleVolumeTracker = ({ workout, selectedMuscles, onMuscleToggle }) => {
       
       <h3 className="text-xl font-bold mb-2 text-cyan-300 flex items-center">
         <i className="fas fa-dumbbell mr-3 text-cyan-400"></i>
-        💪 Muscle Volume Progress
+        💪 Muscle Points Progress
       </h3>
       
       <p className="text-xs text-cyan-400/70 mb-4 italic">
@@ -91,7 +99,7 @@ const MuscleVolumeTracker = ({ workout, selectedMuscles, onMuscleToggle }) => {
                 </div>
                 <div className="flex items-center">
                   <span className="text-cyan-100 font-mono text-sm mr-2">
-                    {completed}/{target} sets
+                    {completed}/{target} pts
                   </span>
                   {percentage >= 100 && (
                     <span className="text-green-400 text-lg">✅</span>

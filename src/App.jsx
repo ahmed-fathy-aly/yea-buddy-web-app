@@ -6,6 +6,7 @@ import TodayWorkoutDisplay from './components/TodayWorkoutDisplay';
 import WorkoutFooter from './components/WorkoutFooter';
 import MuscleVolumeTracker from './components/MuscleVolumeTracker';
 
+
 const App = () => {
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,22 +15,30 @@ const App = () => {
   const [restDuration, setRestDuration] = useState(120);
   const [autoStartTimerTrigger, setAutoStartTimerTrigger] = useState(0);
   const [selectedMuscles, setSelectedMuscles] = useState([]);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    // Default to today in yyyy-mm-dd format
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  });
   const saveTimerRef = useRef(null);
   const setRefs = useRef({});
 
   const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-  // Fetch today's workout from backend
+  // Fetch workout for selected day from backend
   const fetchTodayWorkout = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/workouts/today`);
+      // Convert selectedDay (yyyy-mm-dd) to Date string format expected by backend
+      const dateObj = new Date(selectedDay + 'T00:00:00'); // Avoid timezone issues
+      const dayParam = dateObj.toDateString(); // e.g., "Wed Oct 29 2025"
+      
+      const response = await fetch(`${API_BASE_URL}/workouts/today?day=${encodeURIComponent(dayParam)}`);
       if (!response.ok) {
         if (response.status === 404) {
           setTodayWorkout(null);
-          const todayDate = new Date().toDateString();
-          setMessage(`AIN'T NOTHIN' BUT A PEANUT! No workout logged for today (${todayDate}). Hit that 'Get New Workout Plan' button, YEAH BUDDY!`);
+          setMessage(`AIN'T NOTHIN' BUT A PEANUT! No workout logged for selected day (${dayParam}). Hit that 'Get New Workout Plan' button, YEAH BUDDY!`);
         } else {
           const errData = await response.json();
           throw new Error(errData.message || 'Failed to fetch today\'s workout.');
@@ -41,12 +50,12 @@ const App = () => {
       }
     } catch (err) {
       console.error('Error fetching today\'s workout:', err);
-      setError(`STRANGE! Error loading today's workout: ${err.message}. Make sure the backend is FIRED UP and ready to go!`);
+      setError(`STRANGE! Error loading workout: ${err.message}. Make sure the backend is FIRED UP and ready to go!`);
       setTodayWorkout(null);
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, selectedDay]);
 
   // Save workout changes (sets/reps/weights)
   const saveWorkoutChanges = useCallback(async (workoutToSave) => {
@@ -103,10 +112,10 @@ const App = () => {
     });
   }, [saveWorkoutChanges]);
 
-  // Fetch today's workout on mount
+  // Fetch workout when selectedDay changes
   useEffect(() => {
     fetchTodayWorkout();
-  }, [fetchTodayWorkout]);
+  }, [fetchTodayWorkout, selectedDay]);
 
   // Handle muscle filter toggle
   const handleMuscleToggle = useCallback((muscle) => {
@@ -176,9 +185,81 @@ const App = () => {
             </p>
           </div>
 
+          {/* Day Selector */}
+          <div className="mb-6">
+            <div className="glass-card p-4 sm:p-6 rounded-xl border border-cyan-500/30 w-full">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDay + 'T00:00:00');
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    setSelectedDay(currentDate.toISOString().slice(0, 10));
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-cyan-600/50 hover:bg-cyan-500/50 text-cyan-100 font-semibold text-sm rounded-lg transition-all duration-300 border border-cyan-500/30 hover:scale-105"
+                  aria-label="Previous day"
+                >
+                  Previous
+                </button>
+                
+                <div className="flex flex-col items-center px-4 flex-grow">
+                  <div className="flex items-center gap-2 mb-1">
+                    <i className="fas fa-calendar-day text-cyan-400"></i>
+                    <span className="text-cyan-200 font-semibold text-xs sm:text-sm">Selected Date</span>
+                  </div>
+                  <div className="text-cyan-100 font-bold text-base sm:text-lg text-center">
+                    {(() => {
+                      const dateObj = new Date(selectedDay + 'T00:00:00');
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      dateObj.setHours(0, 0, 0, 0);
+                      
+                      const diffMs = today - dateObj;
+                      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                      
+                      const formattedDate = dateObj.toLocaleDateString(undefined, { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                      });
+                      
+                      if (diffDays === 0) return `${formattedDate} (Today)`;
+                      if (diffDays === 1) return `${formattedDate} (Yesterday)`;
+                      if (diffDays === -1) return `${formattedDate} (Tomorrow)`;
+                      if (diffDays > 0) return `${formattedDate} (${diffDays} days ago)`;
+                      return `${formattedDate} (in ${Math.abs(diffDays)} days)`;
+                    })()}
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDay + 'T00:00:00');
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    setSelectedDay(currentDate.toISOString().slice(0, 10));
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-cyan-600/50 hover:bg-cyan-500/50 text-cyan-100 font-semibold text-sm rounded-lg transition-all duration-300 border border-cyan-500/30 hover:scale-105"
+                  aria-label="Next day"
+                >
+                  Next
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setSelectedDay(new Date().toISOString().slice(0, 10));
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-purple-600/50 hover:bg-purple-500/50 text-purple-100 font-semibold text-sm rounded-lg transition-all duration-300 border border-purple-500/30 hover:scale-105"
+                  aria-label="Go to today"
+                >
+                  Today
+                </button>
+              </div>
+            </div>
+          </div>
+
           <MessageDisplay loading={loading} error={error} message={message} />
           
-          <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} />
+          <SuggestWorkoutSection onWorkoutSuggested={fetchTodayWorkout} selectedDay={selectedDay} />
 
           {/* Muscle Volume Tracker */}
           {todayWorkout && (
@@ -197,6 +278,7 @@ const App = () => {
             setRefs={setRefs}
             refreshWorkout={fetchTodayWorkout}
             selectedMuscles={selectedMuscles}
+            selectedDay={selectedDay}
           />
         </main>
         <WorkoutFooter />

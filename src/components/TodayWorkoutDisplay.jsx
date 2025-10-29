@@ -1,9 +1,32 @@
 import React, { useMemo, useState } from 'react';
 import ExerciseBlock from './ExerciseBlock';
 
-const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, setRefs, refreshWorkout, selectedMuscles = [] }) => {
+const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, setRefs, refreshWorkout, selectedMuscles = [], selectedDay }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [chosenExercises, setChosenExercises] = useState({}); // Store chosen exercise ID by subcategory
+
+  // Format selected day for display
+  const formattedSelectedDay = useMemo(() => {
+    if (!selectedDay) return 'Today';
+    const dateObj = new Date(selectedDay + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dateObj.setHours(0, 0, 0, 0);
+    
+    const diffMs = today - dateObj;
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays === -1) return 'Tomorrow';
+    
+    return dateObj.toLocaleDateString(undefined, { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    });
+  }, [selectedDay]);
 
   // Handle choosing an exercise (hide others in the same subcategory)
   const handleChooseExercise = (exerciseId, subcategory) => {
@@ -19,12 +42,21 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
       return { exercisesBySubcategory: [], recommendedSelection: null };
     }
 
-    // Filter exercises by selected muscles if any are selected
+    // Filter and sort exercises by selected muscles and muscle points
     let filteredExercises = todayWorkout.exercises;
     if (selectedMuscles.length > 0) {
-      filteredExercises = todayWorkout.exercises.filter(exercise => 
-        selectedMuscles.includes(exercise.category)
-      );
+      // Only include exercises that contribute to at least one selected muscle
+      filteredExercises = todayWorkout.exercises.filter(exercise => {
+        if (!exercise.muscle_points) return false;
+        return selectedMuscles.some(muscle => (exercise.muscle_points[muscle] || 0) > 0);
+      });
+      // Sort by total points for the first selected muscle (descending)
+      const primaryMuscle = selectedMuscles[0];
+      filteredExercises = filteredExercises.slice().sort((a, b) => {
+        const aPoints = (a.muscle_points && a.muscle_points[primaryMuscle]) || 0;
+        const bPoints = (b.muscle_points && b.muscle_points[primaryMuscle]) || 0;
+        return bPoints - aPoints;
+      });
     }
 
     // Group exercises by subcategory
@@ -89,10 +121,10 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
         <div className="flex items-center">
           <div className="w-4 h-4 bg-cyan-400 rounded-full mr-3 animate-pulse"></div>
           <i className="fas fa-microchip mr-2 text-cyan-400"></i>
-          <span className="whitespace-nowrap">TODAY'S</span>
+          <span className="whitespace-nowrap">WORKOUT FOR</span>
         </div>
         <div className="flex items-center">
-          <span className="text-purple-400 whitespace-nowrap">WORKOUT</span>
+          <span className="text-purple-400 whitespace-nowrap">{formattedSelectedDay.toUpperCase()}</span>
           <div className="w-4 h-4 bg-purple-400 rounded-full ml-3 animate-pulse" style={{animationDelay: '0.5s'}}></div>
         </div>
       </h2>
@@ -105,6 +137,12 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
             <i className="fas fa-dna mr-3 text-cyan-400"></i>
             {todayWorkout.title}
           </h3>
+          {todayWorkout.day && (
+            <div className="mb-3 text-sm text-cyan-300/80 relative z-10">
+              <i className="fas fa-calendar-day mr-2"></i>
+              Workout Date: {todayWorkout.day}
+            </div>
+          )}
           {todayWorkout.subtitle && <p className="text-zinc-300 italic mb-4 text-base">{todayWorkout.subtitle}</p>}
           
           {/* Workout Plan Info */}
@@ -160,6 +198,31 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
                       const chosenCount = chosenExercises[subcatData.subcategory] ? 1 : 0;
                       const totalCount = Object.keys(subcatData.exerciseGroups).length;
                       
+                      // Calculate total points per muscle for this subcategory
+                      const musclePointsForSubcategory = {};
+                      subcatData.exercises.forEach(ex => {
+                        if (ex.muscle_points) {
+                          Object.entries(ex.muscle_points).forEach(([muscle, points]) => {
+                            musclePointsForSubcategory[muscle] = (musclePointsForSubcategory[muscle] || 0) + points;
+                          });
+                        }
+                      });
+                      
+                      // Sort muscles by points, prioritizing selected muscles
+                      const sortedMusclePoints = Object.entries(musclePointsForSubcategory)
+                        .sort((a, b) => {
+                          // If a muscle is selected, prioritize it
+                          const aIsSelected = selectedMuscles.includes(a[0]);
+                          const bIsSelected = selectedMuscles.includes(b[0]);
+                          
+                          if (aIsSelected && !bIsSelected) return -1;
+                          if (!aIsSelected && bIsSelected) return 1;
+                          
+                          // Otherwise sort by points descending
+                          return b[1] - a[1];
+                        })
+                        .slice(0, 3); // Show top 3 muscles
+                      
                       return (
                         <button
                           key={index}
@@ -179,6 +242,23 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
                               <i className="fas fa-bullseye mr-1"></i>
                               {subcatData.categories.join(', ')}
                             </div>
+                            {/* Show muscle points contribution */}
+                            {sortedMusclePoints.length > 0 && (
+                              <div className="flex flex-wrap gap-1 justify-center mt-1">
+                                {sortedMusclePoints.map(([muscle, points]) => (
+                                  <span 
+                                    key={muscle} 
+                                    className={`text-xs px-2 py-0.5 rounded font-mono ${
+                                      selectedMuscles.includes(muscle)
+                                        ? 'bg-purple-500/30 border border-purple-400/50 text-purple-200 font-bold'
+                                        : 'bg-cyan-900/40 border border-cyan-500/30 text-cyan-300/80'
+                                    }`}
+                                  >
+                                    {muscle}: {points}pts
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                             <div className="text-xs mt-1">
                               <span className={chosenCount > 0 ? 'text-green-400 font-bold' : 'text-cyan-400/80'}>
                                 {chosenCount}/{totalCount} selected
@@ -240,19 +320,35 @@ const TodayWorkoutDisplay = ({ todayWorkout, loading, error, handleSetChange, se
 
                                 if (!shouldShow) return null;
 
+                                // Show muscle points breakdown above each exercise
+                                const musclePoints = exercise.muscle_points || {};
+                                const musclePointsList = Object.entries(musclePoints)
+                                  .filter(([muscle, points]) => points > 0)
+                                  .sort((a, b) => b[1] - a[1]);
+
                                 return (
-                                  <ExerciseBlock
-                                    key={exercise.id || globalExIndex}
-                                    exercise={exercise}
-                                    exIndex={globalExIndex}
-                                    handleSetChange={handleSetChange}
-                                    setRefs={setRefs}
-                                    refreshWorkout={refreshWorkout}
-                                    onChooseExercise={handleChooseExercise}
-                                    exerciseGroup={subcatData.subcategory}
-                                    isChosen={isChosen}
-                                    hasMultipleInGroup={!chosenExercises[subcatData.subcategory] && subcatData.exercises.length > 1}
-                                  />
+                                  <div key={exercise.id || globalExIndex} className="mb-2">
+                                    {musclePointsList.length > 0 && (
+                                      <div className="mb-1 flex flex-wrap gap-2">
+                                        {musclePointsList.map(([muscle, points]) => (
+                                          <span key={muscle} className="bg-cyan-900/40 border border-cyan-400/40 text-cyan-200 text-xs px-2 py-1 rounded font-mono">
+                                            {muscle}: <span className="font-bold">{points} pts</span>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    <ExerciseBlock
+                                      exercise={exercise}
+                                      exIndex={globalExIndex}
+                                      handleSetChange={handleSetChange}
+                                      setRefs={setRefs}
+                                      refreshWorkout={refreshWorkout}
+                                      onChooseExercise={handleChooseExercise}
+                                      exerciseGroup={subcatData.subcategory}
+                                      isChosen={isChosen}
+                                      hasMultipleInGroup={!chosenExercises[subcatData.subcategory] && subcatData.exercises.length > 1}
+                                    />
+                                  </div>
                                 );
                               })}
                             </div>

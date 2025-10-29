@@ -3,7 +3,7 @@ import MuscleSelectionGrid from './MuscleSelectionGrid';
 
 const API_BASE_URL = 'https://yea-buddy-be.onrender.com';
 
-const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
+const SuggestWorkoutSection = ({ onWorkoutSuggested, selectedDay }) => {
   const [showHistory, setShowHistory] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [workoutHistory, setWorkoutHistory] = useState([]);
@@ -87,12 +87,16 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
         additional_input: additionalInput,
         duration_minutes: durationMinutes.toString()
       });
-      
       // Add specific_muscles parameter if muscles are selected
       if (selectedMuscles.length > 0) {
         params.append('specific_muscles', selectedMuscles.join(', '));
       }
-      
+      // Add day parameter if selectedDay is provided, converting to DateString format
+      if (selectedDay) {
+        const dateObj = new Date(selectedDay + 'T00:00:00');
+        const dayParam = dateObj.toDateString();
+        params.append('day', dayParam);
+      }
       const url = `${API_BASE_URL}/suggest-workout?${params.toString()}`;
       const res = await fetch(url);
       if (!res.body) throw new Error('No response body');
@@ -117,7 +121,6 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested }) => {
         }
       }
       setAdditionalInput('');
-      
       // Refresh the workout display
       if (onWorkoutSuggested) onWorkoutSuggested();
     } catch (err) {

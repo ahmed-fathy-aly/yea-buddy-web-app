@@ -65,6 +65,12 @@ const ExerciseBlock = ({
     }
   };
 
+  // Calculate muscle points breakdown for this exercise
+  const musclePoints = exercise.muscle_points || {};
+  const musclePointsList = Object.entries(musclePoints)
+    .filter(([muscle, points]) => points > 0)
+    .sort((a, b) => b[1] - a[1]);
+
   return (
     <div className="bg-zinc-800 p-5 rounded-lg shadow-md mb-5 border border-zinc-700">
       <div className="flex justify-between items-center mb-3">
@@ -75,6 +81,17 @@ const ExerciseBlock = ({
           </span>
         )}
       </div>
+
+      {/* Muscle Points Breakdown */}
+      {musclePointsList.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          {musclePointsList.map(([muscle, points]) => (
+            <span key={muscle} className="bg-cyan-900/40 border border-cyan-400/40 text-cyan-200 text-xs px-2 py-1 rounded font-mono">
+              {muscle}: <span className="font-bold">{points} pts</span>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="exercise-targets">
         <span>
           Target Reps: {exercise.target_reps !== null && exercise.target_reps !== undefined ? exercise.target_reps : <em>Not set</em>}
