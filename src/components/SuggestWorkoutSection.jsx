@@ -51,8 +51,9 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested, selectedDay }) => {
   const getMuscleRatings = async () => {
     setRatingsLoading(true);
     try {
-      const allMuscles = ['Back', 'Chest', 'Traps', 'Triceps', 'Biceps', 'Legs', 'Core', 'Calves', 'Shoulders'];
-      const musclesParam = allMuscles.join(', ');
+      // Use muscle group IDs that match the backend muscle_groups.json
+      const allMuscles = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'core'];
+      const musclesParam = allMuscles.join(',');
       
       const response = await fetch(`${API_BASE_URL}/muscle-ratings?muscles=${encodeURIComponent(musclesParam)}`);
       if (!response.ok) {
@@ -62,16 +63,15 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested, selectedDay }) => {
       setMuscleRatings(data);
     } catch (err) {
       console.error('Error fetching muscle ratings:', err);
+      // Fallback data with correct muscle_id format
       setMuscleRatings([
-        { muscle: 'Back', score: 85, explanation: 'Well recovered, ready for heavy lifting' },
-        { muscle: 'Chest', score: 60, explanation: 'Moderately recovered, light to medium intensity' },
-        { muscle: 'Traps', score: 75, explanation: 'Good recovery, suitable for training' },
-        { muscle: 'Triceps', score: 45, explanation: 'Still recovering, avoid heavy pushing movements' },
-        { muscle: 'Biceps', score: 90, explanation: 'Fully recovered, ready for intense training' },
-        { muscle: 'Legs', score: 30, explanation: 'Heavy fatigue, recommend rest or light activity' },
-        { muscle: 'Core', score: 80, explanation: 'Strong recovery, good for stability work' },
-        { muscle: 'Calves', score: 95, explanation: 'Excellent condition, ready for explosive movements' },
-        { muscle: 'Shoulders', score: 55, explanation: 'Moderate fatigue, be cautious with overhead movements' }
+        { muscle: 'Back', muscle_id: 'back', score: 85, explanation: 'Well recovered, ready for heavy lifting' },
+        { muscle: 'Chest', muscle_id: 'chest', score: 60, explanation: 'Moderately recovered, light to medium intensity' },
+        { muscle: 'Shoulders', muscle_id: 'shoulders', score: 75, explanation: 'Good recovery, suitable for training' },
+        { muscle: 'Triceps', muscle_id: 'triceps', score: 45, explanation: 'Still recovering, avoid heavy pushing movements' },
+        { muscle: 'Biceps & Forearms', muscle_id: 'biceps', score: 90, explanation: 'Fully recovered, ready for intense training' },
+        { muscle: 'Legs', muscle_id: 'legs', score: 30, explanation: 'Heavy fatigue, recommend rest or light activity' },
+        { muscle: 'Core & Abs', muscle_id: 'core', score: 80, explanation: 'Strong recovery, good for stability work' }
       ]);
     } finally {
       setRatingsLoading(false);
@@ -88,8 +88,9 @@ const SuggestWorkoutSection = ({ onWorkoutSuggested, selectedDay }) => {
         duration_minutes: durationMinutes.toString()
       });
       // Add specific_muscles parameter if muscles are selected
+      // selectedMuscles already contains muscle IDs (chest, back, etc.) from MuscleSelectionGrid
       if (selectedMuscles.length > 0) {
-        params.append('specific_muscles', selectedMuscles.join(', '));
+        params.append('specific_muscles', selectedMuscles.join(','));
       }
       // Add day parameter if selectedDay is provided, converting to DateString format
       if (selectedDay) {

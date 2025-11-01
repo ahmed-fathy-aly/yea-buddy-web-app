@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 
 const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings }) => {
+  // Use muscle groups that match the backend muscle_groups.json
   const muscles = [
-    { name: 'Back', icon: '💪' },
-    { name: 'Chest', icon: '🫁' },
-    { name: 'Traps', icon: '🔺' },
-    { name: 'Triceps', icon: '💪' },
-    { name: 'Biceps', icon: '💪' },
-    { name: 'Legs', icon: '🦵' },
-    { name: 'Core', icon: '⚡' },
-    { name: 'Calves', icon: '🦵' },
-    { name: 'Shoulders', icon: '🏋️' }
+    { id: 'chest', name: 'Chest', icon: '🫁' },
+    { id: 'back', name: 'Back', icon: '�' },
+    { id: 'shoulders', name: 'Shoulders', icon: '🏋️' },
+    { id: 'biceps', name: 'Biceps & Forearms', icon: '💪' },
+    { id: 'triceps', name: 'Triceps', icon: '💪' },
+    { id: 'legs', name: 'Legs', icon: '🦵' },
+    { id: 'core', name: 'Core & Abs', icon: '⚡' }
   ];
 
-  const isMuscleSelected = (muscle) => {
-    return selectedMuscles.includes(muscle);
+  const isMuscleSelected = (muscleId) => {
+    return selectedMuscles.includes(muscleId);
   };
 
-  const getMuscleRating = (muscleName) => {
+  const getMuscleRating = (muscleId) => {
     if (!muscleRatings) return null;
-    return muscleRatings.find(rating => rating.muscle === muscleName);
+    // Match by muscle_id field from backend
+    return muscleRatings.find(rating => rating.muscle_id === muscleId);
   };
 
   const getRatingColor = (score) => {
@@ -29,8 +29,8 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
     return 'bg-red-500';
   };
 
-  const handleMuscleClick = (muscle) => {
-    onMuscleToggle(muscle);
+  const handleMuscleClick = (muscleId) => {
+    onMuscleToggle(muscleId);
   };
 
   return (
@@ -44,15 +44,15 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
       
       <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
         {muscles.map((muscle) => {
-          const rating = getMuscleRating(muscle.name);
+          const rating = getMuscleRating(muscle.id);
           return (
             <button
-              key={muscle.name}
-              onClick={() => handleMuscleClick(muscle.name)}
+              key={muscle.id}
+              onClick={() => handleMuscleClick(muscle.id)}
               className={`
                 relative p-4 rounded-lg border-2 transition-all duration-300 ease-in-out
                 transform hover:scale-105 hover:shadow-lg
-                ${isMuscleSelected(muscle.name)
+                ${isMuscleSelected(muscle.id)
                   ? 'bg-blue-600 border-blue-400 text-white shadow-blue-400/30 shadow-lg'
                   : 'bg-zinc-800 border-zinc-600 text-zinc-300 hover:border-blue-500 hover:bg-zinc-700'
                 }
@@ -61,7 +61,7 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
               <div className="flex flex-col items-center space-y-2">
                 <span className="text-2xl">{muscle.icon}</span>
                 <span className={`text-sm font-bold ${
-                  isMuscleSelected(muscle.name) ? 'text-white' : 'text-zinc-300'
+                  isMuscleSelected(muscle.id) ? 'text-white' : 'text-zinc-300'
                 }`}>
                   {muscle.name}
                 </span>
@@ -86,7 +86,7 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
               </div>
               
               {/* Selection indicator */}
-              {isMuscleSelected(muscle.name) && (
+              {isMuscleSelected(muscle.id) && (
                 <div className="absolute -top-1 -right-1 bg-blue-400 text-white rounded-full w-6 h-6 flex items-center justify-center">
                   <i className="fas fa-check text-xs"></i>
                 </div>
@@ -101,10 +101,10 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
           <div className="text-center">
             <span className="text-blue-400 font-bold">Active Selections: </span>
             <span className="text-white">
-              {selectedMuscles.join(', ')}
+              {selectedMuscles.map(id => muscles.find(m => m.id === id)?.name || id).join(', ')}
             </span>
             <button
-              onClick={() => selectedMuscles.forEach(muscle => onMuscleToggle(muscle))}
+              onClick={() => selectedMuscles.forEach(muscleId => onMuscleToggle(muscleId))}
               className="ml-3 text-xs text-zinc-400 hover:text-white underline"
             >
               Clear All
@@ -126,7 +126,7 @@ const MuscleSelectionGrid = ({ selectedMuscles, onMuscleToggle, muscleRatings })
                 <div 
                   key={idx} 
                   className={`p-3 rounded-lg border transition-colors duration-200 ${
-                    selectedMuscles.includes(rating.muscle)
+                    selectedMuscles.includes(rating.muscle_id)
                       ? 'bg-blue-900 border-blue-500'
                       : 'bg-zinc-800 border-zinc-600'
                   }`}
